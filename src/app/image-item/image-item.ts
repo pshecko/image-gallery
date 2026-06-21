@@ -12,7 +12,20 @@ import { GalleryImage } from '../models/gallery-image.model';
 export class ImageItem {
   readonly image = input.required<GalleryImage>();
   readonly isFeatured = input(false);
+  readonly isSelected = input(false);
+  readonly selectImage = output<string>();
   readonly deleteImage = output<string>();
+
+  protected onSelectClick(event: MouseEvent): void {
+    event.stopPropagation();
+    this.selectImage.emit(this.image().id);
+  }
+
+  protected onSelectKeydown(event: Event): void {
+    event.preventDefault();
+    event.stopPropagation();
+    this.selectImage.emit(this.image().id);
+  }
 
   protected onDeleteClick(event: MouseEvent): void {
     event.stopPropagation();
