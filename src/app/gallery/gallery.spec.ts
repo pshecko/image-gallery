@@ -19,4 +19,15 @@ describe('Gallery', () => {
     expect(compiled.querySelector('h1')?.textContent).toContain('Galeria de imagenes');
     expect(compiled.querySelectorAll('app-image-item').length).toBe(galleryImages.length);
   });
+
+  it('should mark the first image as featured', async () => {
+    const fixture = TestBed.createComponent(Gallery);
+    await fixture.whenStable();
+
+    const compiled = fixture.nativeElement as HTMLElement;
+    const cards = compiled.querySelectorAll('.image-card');
+
+    expect(cards[0]?.classList.contains('featured')).toBe(true);
+    expect(cards[1]?.classList.contains('featured')).toBe(false);
+  });
 });

@@ -7,11 +7,12 @@ import { ImageItem } from './image-item';
 @Component({
   imports: [ImageItem],
   template: `
-    <app-image-item [image]="image" />
+    <app-image-item [image]="image" [isFeatured]="isFeatured" />
   `,
 })
 class ImageItemHost {
   image = galleryImages[0];
+  isFeatured = false;
 }
 
 describe('ImageItem', () => {
@@ -31,5 +32,16 @@ describe('ImageItem', () => {
     expect(image?.getAttribute('src')).toContain(galleryImages[0].src);
     expect(image?.getAttribute('alt')).toBe('Imagen de galeria 1');
     expect(compiled.textContent).toContain('Imagen 1');
+  });
+
+  it('should apply a featured class when the image is featured', () => {
+    const fixture = TestBed.createComponent(ImageItemHost);
+    fixture.componentInstance.isFeatured = true;
+    fixture.detectChanges();
+
+    const compiled = fixture.nativeElement as HTMLElement;
+    const card = compiled.querySelector('.image-card');
+
+    expect(card?.classList.contains('featured')).toBe(true);
   });
 });

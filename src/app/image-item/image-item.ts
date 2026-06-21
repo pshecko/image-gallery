@@ -9,4 +9,5 @@ import { GalleryImage } from '../models/gallery-image.model';
 })
 export class ImageItem {
   readonly image = input.required<GalleryImage>();
+  readonly isFeatured = input(false);
 }
