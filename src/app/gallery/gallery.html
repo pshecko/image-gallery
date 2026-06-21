@@ -1,0 +1,16 @@
+<section class="mx-auto max-w-5xl px-4 py-8" aria-labelledby="gallery-title">
+  <header class="mb-6">
+    <h1 id="gallery-title" class="text-3xl font-bold text-gray-900">
+      Galeria de imagenes
+    </h1>
+    <p class="mt-2 text-gray-600">
+      Galeria de practica con imagenes de marcador de posicion.
+    </p>
+  </header>
+
+  <div class="grid grid-cols-2 gap-4 md:grid-cols-4 lg:grid-cols-5">
+    @for (image of images(); track image.id; let first = $first) {
+    <app-image-item [image]="image" [isFeatured]="first" />
+    }
+  </div>
+</section>

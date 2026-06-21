@@ -1,3 +1,12 @@
 /* You can add global styles to this file, and also import other style files */
 
 @import 'tailwindcss';
+
+.image-card.featured {
+  border-color: #1d4ed8;
+  border-width: 4px;
+}
+
+.image-card.featured img {
+  min-height: 260px;
+}
