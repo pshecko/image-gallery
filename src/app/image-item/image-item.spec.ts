@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
+import { By } from '@angular/platform-browser';
 
 import { galleryImages } from '../data/gallery-images';
 import { ImageItem } from './image-item';
@@ -7,15 +8,24 @@ import { ImageItem } from './image-item';
 @Component({
   imports: [ImageItem],
   template: `
-    <app-image-item [image]="image" [isFeatured]="isFeatured" />
+    <app-image-item
+      [image]="image"
+      [isFeatured]="isFeatured"
+      (deleteImage)="deletedImageId = $event"
+    />
   `,
 })
 class ImageItemHost {
   image = galleryImages[0];
   isFeatured = false;
+  deletedImageId = '';
 }
 
 describe('ImageItem', () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [ImageItemHost],
@@ -55,5 +65,20 @@ describe('ImageItem', () => {
 
     expect(card?.classList.contains('md:col-span-2')).toBe(true);
     expect(card?.classList.contains('md:row-span-2')).toBe(true);
+  });
+
+  it('should emit the image id when the delete button is clicked', () => {
+    const fixture = TestBed.createComponent(ImageItemHost);
+    fixture.detectChanges();
+
+    const deleteButton = fixture.debugElement.query(By.css('button'));
+    const clickEvent = {
+      stopPropagation: vi.fn(),
+    } as unknown as MouseEvent;
+
+    deleteButton.triggerEventHandler('click', clickEvent);
+
+    expect(clickEvent.stopPropagation).toHaveBeenCalled();
+    expect(fixture.componentInstance.deletedImageId).toBe(galleryImages[0].id);
   });
 });

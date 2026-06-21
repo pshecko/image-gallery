@@ -4,6 +4,10 @@ import { galleryImages } from '../data/gallery-images';
 import { Gallery } from './gallery';
 
 describe('Gallery', () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [Gallery],
@@ -41,5 +45,46 @@ describe('Gallery', () => {
     expect(grid?.classList.contains('grid-cols-2')).toBe(true);
     expect(grid?.classList.contains('md:grid-cols-4')).toBe(true);
     expect(grid?.classList.contains('lg:grid-cols-5')).toBe(true);
+  });
+
+  it('should remove an image when deletion is confirmed', async () => {
+    vi.spyOn(window, 'confirm').mockReturnValue(true);
+    const fixture = TestBed.createComponent(Gallery);
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    const compiled = fixture.nativeElement as HTMLElement;
+    const deleteButton = compiled.querySelector(
+      'button[aria-label="Eliminar Imagen 1"]',
+    ) as HTMLButtonElement;
+
+    deleteButton.click();
+    fixture.detectChanges();
+
+    expect(window.confirm).toHaveBeenCalledWith('Eliminar imagen?');
+    expect(compiled.querySelectorAll('app-image-item').length).toBe(
+      galleryImages.length - 1,
+    );
+    expect(compiled.textContent).not.toContain('Imagen 1');
+  });
+
+  it('should keep an image when deletion is cancelled', async () => {
+    vi.spyOn(window, 'confirm').mockReturnValue(false);
+    const fixture = TestBed.createComponent(Gallery);
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    const compiled = fixture.nativeElement as HTMLElement;
+    const deleteButton = compiled.querySelector(
+      'button[aria-label="Eliminar Imagen 1"]',
+    ) as HTMLButtonElement;
+
+    deleteButton.click();
+    fixture.detectChanges();
+
+    expect(compiled.querySelectorAll('app-image-item').length).toBe(
+      galleryImages.length,
+    );
+    expect(compiled.textContent).toContain('Imagen 1');
   });
 });
