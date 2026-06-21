@@ -11,4 +11,14 @@ import { ImageItem } from '../image-item/image-item';
 })
 export class Gallery {
   protected readonly images = signal([...galleryImages]);
+
+  protected removeImage(imageId: string): void {
+    if (!window.confirm('Eliminar imagen?')) {
+      return;
+    }
+
+    this.images.update((images) =>
+      images.filter((image) => image.id !== imageId),
+    );
+  }
 }
