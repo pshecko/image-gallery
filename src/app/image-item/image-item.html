@@ -1,6 +1,7 @@
 <article
-  class="image-card h-full rounded border border-gray-300 bg-white p-3"
+  class="image-card relative h-full rounded border border-gray-300 bg-white p-3"
   [class.featured]="isFeatured()"
+  [class.selected]="isSelected()"
   [class.md:col-span-2]="isFeatured()"
   [class.md:row-span-2]="isFeatured()"
 >
@@ -8,7 +9,22 @@
     class="mb-3 aspect-3/2 w-full rounded object-cover"
     [src]="image().src"
     [alt]="image().alt"
+    role="button"
+    tabindex="0"
+    [attr.aria-pressed]="isSelected()"
+    [attr.aria-label]="'Seleccionar ' + image().title"
+    (click)="onSelectClick($event)"
+    (keydown.enter)="onSelectKeydown($event)"
+    (keydown.space)="onSelectKeydown($event)"
   />
+
+  @if (isSelected()) {
+  <span
+    class="absolute right-5 top-5 rounded bg-blue-700 px-2 py-1 text-sm font-semibold text-white"
+  >
+    Seleccionada
+  </span>
+  }
 
   <h2 class="text-base font-semibold text-gray-900">{{ image().title }}</h2>
 

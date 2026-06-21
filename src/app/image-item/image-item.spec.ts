@@ -11,6 +11,8 @@ import { ImageItem } from './image-item';
     <app-image-item
       [image]="image"
       [isFeatured]="isFeatured"
+      [isSelected]="isSelected"
+      (selectImage)="selectedImageId = $event"
       (deleteImage)="deletedImageId = $event"
     />
   `,
@@ -18,6 +20,8 @@ import { ImageItem } from './image-item';
 class ImageItemHost {
   image = galleryImages[0];
   isFeatured = false;
+  isSelected = false;
+  selectedImageId = '';
   deletedImageId = '';
 }
 
@@ -65,6 +69,33 @@ describe('ImageItem', () => {
 
     expect(card?.classList.contains('md:col-span-2')).toBe(true);
     expect(card?.classList.contains('md:row-span-2')).toBe(true);
+  });
+
+  it('should show when an image is selected', () => {
+    const fixture = TestBed.createComponent(ImageItemHost);
+    fixture.componentInstance.isSelected = true;
+    fixture.detectChanges();
+
+    const compiled = fixture.nativeElement as HTMLElement;
+    const card = compiled.querySelector('.image-card');
+
+    expect(card?.classList.contains('selected')).toBe(true);
+    expect(compiled.textContent).toContain('Seleccionada');
+  });
+
+  it('should emit the image id when the image is clicked', () => {
+    const fixture = TestBed.createComponent(ImageItemHost);
+    fixture.detectChanges();
+
+    const image = fixture.debugElement.query(By.css('img'));
+    const clickEvent = {
+      stopPropagation: vi.fn(),
+    } as unknown as MouseEvent;
+
+    image.triggerEventHandler('click', clickEvent);
+
+    expect(clickEvent.stopPropagation).toHaveBeenCalled();
+    expect(fixture.componentInstance.selectedImageId).toBe(galleryImages[0].id);
   });
 
   it('should emit the image id when the delete button is clicked', () => {

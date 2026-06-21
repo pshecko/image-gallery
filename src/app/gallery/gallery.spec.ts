@@ -11,6 +11,14 @@ function getItemTitles(compiled: HTMLElement): string[] {
   );
 }
 
+function clickImage(compiled: HTMLElement, imageNumber: number): void {
+  const image = compiled.querySelector(
+    `img[alt="Imagen de galeria ${imageNumber}"]`,
+  ) as HTMLImageElement;
+
+  image.click();
+}
+
 describe('Gallery', () => {
   afterEach(() => {
     vi.restoreAllMocks();
@@ -96,6 +104,111 @@ describe('Gallery', () => {
     ]);
     expect(cards[0]?.classList.contains('featured')).toBe(true);
     expect(cards[2]?.classList.contains('featured')).toBe(false);
+  });
+
+  it('should select and deselect an image', async () => {
+    const fixture = TestBed.createComponent(Gallery);
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    const compiled = fixture.nativeElement as HTMLElement;
+
+    clickImage(compiled, 1);
+    fixture.detectChanges();
+
+    expect(compiled.querySelectorAll('.image-card.selected').length).toBe(1);
+    expect(
+      compiled.querySelector('[data-testid="selection-toolbar"]')?.textContent,
+    ).toContain('1 imagen seleccionada');
+
+    clickImage(compiled, 1);
+    fixture.detectChanges();
+
+    expect(compiled.querySelectorAll('.image-card.selected').length).toBe(0);
+    expect(
+      compiled.querySelector('[data-testid="selection-toolbar"]'),
+    ).toBeNull();
+  });
+
+  it('should allow selecting multiple images', async () => {
+    const fixture = TestBed.createComponent(Gallery);
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    const compiled = fixture.nativeElement as HTMLElement;
+
+    clickImage(compiled, 1);
+    clickImage(compiled, 2);
+    fixture.detectChanges();
+
+    expect(compiled.querySelectorAll('.image-card.selected').length).toBe(2);
+    expect(
+      compiled.querySelector('[data-testid="selection-toolbar"]')?.textContent,
+    ).toContain('2 imagenes seleccionadas');
+    expect(
+      compiled.querySelector(
+        'button[aria-label="Eliminar 2 imagenes seleccionadas"]',
+      ),
+    ).not.toBeNull();
+  });
+
+  it('should delete selected images when batch deletion is confirmed', async () => {
+    vi.spyOn(window, 'confirm').mockReturnValue(true);
+    const fixture = TestBed.createComponent(Gallery);
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    const compiled = fixture.nativeElement as HTMLElement;
+
+    clickImage(compiled, 1);
+    clickImage(compiled, 2);
+    fixture.detectChanges();
+
+    const deleteSelectedButton = compiled.querySelector(
+      'button[aria-label="Eliminar 2 imagenes seleccionadas"]',
+    ) as HTMLButtonElement;
+
+    deleteSelectedButton.click();
+    fixture.detectChanges();
+
+    expect(window.confirm).toHaveBeenCalledWith(
+      'Eliminar 2 imagenes seleccionadas?',
+    );
+    expect(compiled.querySelectorAll('app-image-item').length).toBe(
+      galleryImages.length - 2,
+    );
+    expect(compiled.textContent).not.toContain('Imagen 1');
+    expect(compiled.textContent).not.toContain('Imagen 2');
+    expect(
+      compiled.querySelector('[data-testid="selection-toolbar"]'),
+    ).toBeNull();
+  });
+
+  it('should keep selected images when batch deletion is cancelled', async () => {
+    vi.spyOn(window, 'confirm').mockReturnValue(false);
+    const fixture = TestBed.createComponent(Gallery);
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    const compiled = fixture.nativeElement as HTMLElement;
+
+    clickImage(compiled, 1);
+    clickImage(compiled, 2);
+    fixture.detectChanges();
+
+    const deleteSelectedButton = compiled.querySelector(
+      'button[aria-label="Eliminar 2 imagenes seleccionadas"]',
+    ) as HTMLButtonElement;
+
+    deleteSelectedButton.click();
+    fixture.detectChanges();
+
+    expect(compiled.querySelectorAll('app-image-item').length).toBe(
+      galleryImages.length,
+    );
+    expect(compiled.querySelectorAll('.image-card.selected').length).toBe(2);
+    expect(compiled.textContent).toContain('Imagen 1');
+    expect(compiled.textContent).toContain('Imagen 2');
   });
 
   it('should remove an image when deletion is confirmed', async () => {
