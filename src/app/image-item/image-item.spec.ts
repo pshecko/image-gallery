@@ -98,6 +98,23 @@ describe('ImageItem', () => {
     expect(fixture.componentInstance.selectedImageId).toBe(galleryImages[0].id);
   });
 
+  it('should emit the image id when selection is triggered from the keyboard', () => {
+    const fixture = TestBed.createComponent(ImageItemHost);
+    fixture.detectChanges();
+
+    const image = fixture.debugElement.query(By.css('img'));
+    const keydownEvent = {
+      preventDefault: vi.fn(),
+      stopPropagation: vi.fn(),
+    } as unknown as Event;
+
+    image.triggerEventHandler('keydown.enter', keydownEvent);
+
+    expect(keydownEvent.preventDefault).toHaveBeenCalled();
+    expect(keydownEvent.stopPropagation).toHaveBeenCalled();
+    expect(fixture.componentInstance.selectedImageId).toBe(galleryImages[0].id);
+  });
+
   it('should emit the image id when the delete button is clicked', () => {
     const fixture = TestBed.createComponent(ImageItemHost);
     fixture.detectChanges();
