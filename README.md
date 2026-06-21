@@ -1,59 +1,64 @@
-# ImageGallery
+# Image Gallery
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 21.2.10.
+Galeria de imagenes creada con Angular para practicar componentes standalone,
+signals, inputs, outputs, testing y organizacion con ramas de Git.
 
-## Development server
+## Funcionalidades
 
-To start a local development server, run:
+- Grid responsive de imagenes de marcador de posicion desde Picsum.
+- Primera imagen destacada visualmente.
+- Eliminacion individual con confirmacion.
+- Reordenamiento con Angular CDK drag and drop.
+- Seleccion multiple de imagenes.
+- Eliminacion de imagenes seleccionadas con confirmacion.
+- Tests unitarios e integracion con Vitest.
 
-```bash
-ng serve
-```
+## Tecnologias
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+- Angular 21
+- TypeScript
+- Tailwind CSS
+- PrimeNG
+- Angular CDK
+- Vitest
 
-## Code scaffolding
-
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
-
-```bash
-ng generate component component-name
-```
-
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
-
-```bash
-ng generate --help
-```
-
-## Building
-
-To build the project run:
+## Instalacion
 
 ```bash
-ng build
+npm install
 ```
 
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
-
-## Running unit tests
-
-To execute unit tests with the [Vitest](https://vitest.dev/) test runner, use the following command:
+## Servidor de desarrollo
 
 ```bash
-ng test
+npm start
 ```
 
-## Running end-to-end tests
+Abre `http://localhost:4200/` en el navegador.
 
-For end-to-end (e2e) testing, run:
+## Tests
 
 ```bash
-ng e2e
+npm test
 ```
 
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
+Para ejecutar tests con cobertura:
 
-## Additional Resources
+```bash
+ng test --coverage --coverage-reporters=text-summary --watch=false
+```
 
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+## Build
+
+```bash
+npm run build
+```
+
+El build de produccion se genera en `dist/image-gallery/`.
+
+## Estructura principal
+
+- `src/app/data/`: datos de ejemplo de la galeria.
+- `src/app/models/`: modelo `GalleryImage`.
+- `src/app/gallery/`: componente padre, estado y acciones de la galeria.
+- `src/app/image-item/`: componente hijo para mostrar cada imagen.
