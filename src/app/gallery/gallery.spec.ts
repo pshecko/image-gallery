@@ -30,4 +30,16 @@ describe('Gallery', () => {
     expect(cards[0]?.classList.contains('featured')).toBe(true);
     expect(cards[1]?.classList.contains('featured')).toBe(false);
   });
+
+  it('should use the responsive grid required by the briefing', async () => {
+    const fixture = TestBed.createComponent(Gallery);
+    await fixture.whenStable();
+
+    const compiled = fixture.nativeElement as HTMLElement;
+    const grid = compiled.querySelector('[data-testid="gallery-grid"]');
+
+    expect(grid?.classList.contains('grid-cols-2')).toBe(true);
+    expect(grid?.classList.contains('md:grid-cols-4')).toBe(true);
+    expect(grid?.classList.contains('lg:grid-cols-5')).toBe(true);
+  });
 });
