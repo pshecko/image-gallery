@@ -44,4 +44,16 @@ describe('ImageItem', () => {
 
     expect(card?.classList.contains('featured')).toBe(true);
   });
+
+  it('should make a featured image span two rows and columns from tablet size', () => {
+    const fixture = TestBed.createComponent(ImageItemHost);
+    fixture.componentInstance.isFeatured = true;
+    fixture.detectChanges();
+
+    const compiled = fixture.nativeElement as HTMLElement;
+    const card = compiled.querySelector('.image-card');
+
+    expect(card?.classList.contains('md:col-span-2')).toBe(true);
+    expect(card?.classList.contains('md:row-span-2')).toBe(true);
+  });
 });
