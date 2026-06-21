@@ -21,3 +21,18 @@ body {
 .image-card.featured img {
   min-height: 260px;
 }
+
+.cdk-drag-preview {
+  box-sizing: border-box;
+  border-radius: 4px;
+  box-shadow: 0 8px 20px rgb(15 23 42 / 20%);
+}
+
+.cdk-drag-placeholder {
+  opacity: 0.35;
+}
+
+.cdk-drag-animating,
+.cdk-drop-list-dragging app-image-item:not(.cdk-drag-placeholder) {
+  transition: transform 180ms ease;
+}
