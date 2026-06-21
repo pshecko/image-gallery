@@ -211,6 +211,33 @@ describe('Gallery', () => {
     expect(compiled.textContent).toContain('Imagen 2');
   });
 
+  it('should clear selection for an image removed individually', async () => {
+    vi.spyOn(window, 'confirm').mockReturnValue(true);
+    const fixture = TestBed.createComponent(Gallery);
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    const compiled = fixture.nativeElement as HTMLElement;
+
+    clickImage(compiled, 1);
+    fixture.detectChanges();
+
+    const deleteButton = compiled.querySelector(
+      'button[aria-label="Eliminar Imagen 1"]',
+    ) as HTMLButtonElement;
+
+    deleteButton.click();
+    fixture.detectChanges();
+
+    expect(compiled.querySelectorAll('app-image-item').length).toBe(
+      galleryImages.length - 1,
+    );
+    expect(compiled.querySelectorAll('.image-card.selected').length).toBe(0);
+    expect(
+      compiled.querySelector('[data-testid="selection-toolbar"]'),
+    ).toBeNull();
+  });
+
   it('should remove an image when deletion is confirmed', async () => {
     vi.spyOn(window, 'confirm').mockReturnValue(true);
     const fixture = TestBed.createComponent(Gallery);
