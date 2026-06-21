@@ -1,7 +1,15 @@
 import { TestBed } from '@angular/core/testing';
+import { CdkDragDrop } from '@angular/cdk/drag-drop';
 
 import { galleryImages } from '../data/gallery-images';
+import { GalleryImage } from '../models/gallery-image.model';
 import { Gallery } from './gallery';
+
+function getItemTitles(compiled: HTMLElement): string[] {
+  return Array.from(compiled.querySelectorAll('app-image-item h2')).map(
+    (title) => title.textContent?.trim() ?? '',
+  );
+}
 
 describe('Gallery', () => {
   afterEach(() => {
@@ -45,6 +53,49 @@ describe('Gallery', () => {
     expect(grid?.classList.contains('grid-cols-2')).toBe(true);
     expect(grid?.classList.contains('md:grid-cols-4')).toBe(true);
     expect(grid?.classList.contains('lg:grid-cols-5')).toBe(true);
+  });
+
+  it('should render the grid as a CDK drop list with draggable image items', async () => {
+    const fixture = TestBed.createComponent(Gallery);
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    const compiled = fixture.nativeElement as HTMLElement;
+    const grid = compiled.querySelector('[data-testid="gallery-grid"]');
+
+    expect(grid?.classList.contains('cdk-drop-list')).toBe(true);
+    expect(grid?.getAttribute('cdkDropListOrientation')).toBe('mixed');
+    expect(compiled.querySelectorAll('app-image-item.cdk-drag').length).toBe(
+      galleryImages.length,
+    );
+  });
+
+  it('should reorder images when an item is dropped', async () => {
+    const fixture = TestBed.createComponent(Gallery);
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    const component = fixture.componentInstance as unknown as {
+      drop(event: CdkDragDrop<GalleryImage[]>): void;
+    };
+    const dropEvent = {
+      previousIndex: 0,
+      currentIndex: 2,
+    } as CdkDragDrop<GalleryImage[]>;
+
+    component.drop(dropEvent);
+    fixture.detectChanges();
+
+    const compiled = fixture.nativeElement as HTMLElement;
+    const cards = compiled.querySelectorAll('.image-card');
+
+    expect(getItemTitles(compiled).slice(0, 3)).toEqual([
+      'Imagen 2',
+      'Imagen 3',
+      'Imagen 1',
+    ]);
+    expect(cards[0]?.classList.contains('featured')).toBe(true);
+    expect(cards[2]?.classList.contains('featured')).toBe(false);
   });
 
   it('should remove an image when deletion is confirmed', async () => {
