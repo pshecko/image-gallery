@@ -27,6 +27,11 @@ export class ImageItem {
     this.selectImage.emit(this.image().id);
   }
 
+  protected onCheckboxChange(event: Event): void {
+    event.stopPropagation();
+    this.selectImage.emit(this.image().id);
+  }
+
   protected onDeleteClick(event: MouseEvent): void {
     event.stopPropagation();
     this.deleteImage.emit(this.image().id);

@@ -78,9 +78,27 @@ describe('ImageItem', () => {
 
     const compiled = fixture.nativeElement as HTMLElement;
     const card = compiled.querySelector('.image-card');
+    const checkbox = compiled.querySelector(
+      'input[type="checkbox"]',
+    ) as HTMLInputElement;
 
     expect(card?.classList.contains('selected')).toBe(true);
-    expect(compiled.textContent).toContain('Seleccionada');
+    expect(checkbox?.checked).toBe(true);
+    expect(compiled.textContent).not.toContain('Seleccionada');
+  });
+
+  it('should render a plain checkbox for selecting the image', () => {
+    const fixture = TestBed.createComponent(ImageItemHost);
+    fixture.detectChanges();
+
+    const compiled = fixture.nativeElement as HTMLElement;
+    const checkbox = compiled.querySelector(
+      'input[type="checkbox"][aria-label="Seleccionar Imagen 1"]',
+    ) as HTMLInputElement;
+
+    expect(checkbox).not.toBeNull();
+    expect(checkbox.checked).toBe(false);
+    expect(compiled.querySelector('.selection-control')).toBeNull();
   });
 
   it('should emit the image id when the image is clicked', () => {
@@ -95,6 +113,23 @@ describe('ImageItem', () => {
     image.triggerEventHandler('click', clickEvent);
 
     expect(clickEvent.stopPropagation).toHaveBeenCalled();
+    expect(fixture.componentInstance.selectedImageId).toBe(galleryImages[0].id);
+  });
+
+  it('should emit the image id when the checkbox is changed', () => {
+    const fixture = TestBed.createComponent(ImageItemHost);
+    fixture.detectChanges();
+
+    const checkbox = fixture.debugElement.query(
+      By.css('input[type="checkbox"]'),
+    );
+    const changeEvent = {
+      stopPropagation: vi.fn(),
+    } as unknown as Event;
+
+    checkbox.triggerEventHandler('change', changeEvent);
+
+    expect(changeEvent.stopPropagation).toHaveBeenCalled();
     expect(fixture.componentInstance.selectedImageId).toBe(galleryImages[0].id);
   });
 

@@ -19,6 +19,15 @@ function clickImage(compiled: HTMLElement, imageNumber: number): void {
   image.click();
 }
 
+function changeCheckbox(compiled: HTMLElement, imageNumber: number): void {
+  const checkbox = compiled.querySelector(
+    `input[type="checkbox"][aria-label="Seleccionar Imagen ${imageNumber}"]`,
+  ) as HTMLInputElement;
+
+  checkbox.checked = !checkbox.checked;
+  checkbox.dispatchEvent(new Event('change', { bubbles: true }));
+}
+
 describe('Gallery', () => {
   afterEach(() => {
     vi.restoreAllMocks();
@@ -150,6 +159,29 @@ describe('Gallery', () => {
         'button[aria-label="Eliminar 2 imagenes seleccionadas"]',
       ),
     ).not.toBeNull();
+  });
+
+  it('should allow selecting multiple images with checkboxes', async () => {
+    const fixture = TestBed.createComponent(Gallery);
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    const compiled = fixture.nativeElement as HTMLElement;
+
+    changeCheckbox(compiled, 1);
+    changeCheckbox(compiled, 2);
+    fixture.detectChanges();
+
+    const checkboxes = compiled.querySelectorAll<HTMLInputElement>(
+      'input[type="checkbox"]',
+    );
+
+    expect(checkboxes[0]?.checked).toBe(true);
+    expect(checkboxes[1]?.checked).toBe(true);
+    expect(compiled.querySelectorAll('.image-card.selected').length).toBe(2);
+    expect(
+      compiled.querySelector('[data-testid="selection-toolbar"]')?.textContent,
+    ).toContain('2 imagenes seleccionadas');
   });
 
   it('should delete selected images when batch deletion is confirmed', async () => {
