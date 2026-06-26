@@ -31,22 +31,37 @@
     cdkDropList
     cdkDropListOrientation="mixed"
     data-testid="gallery-grid"
-    [cdkDropListData]="visibleImages()"
+    [cdkDropListData]="draggableImages()"
     (cdkDropListDropped)="drop($event)"
     class="grid grid-cols-2 gap-4 md:grid-cols-4 lg:grid-cols-5"
   >
-    @for (image of visibleImages(); track image.id) {
+    @for (image of visibleImages(); track image.id; let imageIndex = $index) {
+    @if (isPinned(image.id)) {
     <app-image-item
-      cdkDrag
-      class="block cursor-grab active:cursor-grabbing"
+      class="block"
       [image]="image"
       [isFeatured]="isPinned(image.id)"
+      [isPriority]="imageIndex === 0"
       [isSelected]="isSelected(image.id)"
       [isPinned]="isPinned(image.id)"
       (selectImage)="toggleSelection($event)"
       (deleteImage)="removeImage($event)"
       (pinImage)="pinImage($event)"
     />
+    } @else {
+    <app-image-item
+      cdkDrag
+      class="block cursor-grab active:cursor-grabbing"
+      [image]="image"
+      [isFeatured]="isPinned(image.id)"
+      [isPriority]="imageIndex === 0"
+      [isSelected]="isSelected(image.id)"
+      [isPinned]="isPinned(image.id)"
+      (selectImage)="toggleSelection($event)"
+      (deleteImage)="removeImage($event)"
+      (pinImage)="pinImage($event)"
+    />
+    }
     }
   </div>
 </section>

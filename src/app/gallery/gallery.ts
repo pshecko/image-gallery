@@ -34,6 +34,11 @@ export class Gallery {
       ...images.filter((image) => !pinnedImageIds.has(image.id)),
     ];
   });
+  protected readonly draggableImages = computed(() => {
+    const pinnedImageIds = this.pinnedImageIds();
+
+    return this.images().filter((image) => !pinnedImageIds.has(image.id));
+  });
   protected readonly selectedImageIds = signal(new Set<string>());
   protected readonly selectedCount = computed(
     () => this.selectedImageIds().size,
@@ -47,15 +52,26 @@ export class Gallery {
   });
 
   protected drop(event: CdkDragDrop<GalleryImage[]>): void {
-    const reorderedImages = [...this.visibleImages()];
+    const pinnedImageIds = this.pinnedImageIds();
+    const reorderedDraggableImages = [...this.draggableImages()];
 
     moveItemInArray(
-      reorderedImages,
+      reorderedDraggableImages,
       event.previousIndex,
       event.currentIndex,
     );
 
-    this.images.set(reorderedImages);
+    this.images.update((images) => {
+      let draggableImageIndex = 0;
+
+      return images.map((image) => {
+        if (pinnedImageIds.has(image.id)) {
+          return image;
+        }
+
+        return reorderedDraggableImages[draggableImageIndex++];
+      });
+    });
   }
 
   protected pinImage(imageId: string): void {
