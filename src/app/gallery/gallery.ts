@@ -24,6 +24,16 @@ import { GalleryImage } from '../models/gallery-image.model';
 })
 export class Gallery {
   protected readonly images = signal([...galleryImages]);
+  protected readonly pinnedImageIds = signal(new Set<string>());
+  protected readonly visibleImages = computed(() => {
+    const images = this.images();
+    const pinnedImageIds = this.pinnedImageIds();
+
+    return [
+      ...images.filter((image) => pinnedImageIds.has(image.id)),
+      ...images.filter((image) => !pinnedImageIds.has(image.id)),
+    ];
+  });
   protected readonly selectedImageIds = signal(new Set<string>());
   protected readonly selectedCount = computed(
     () => this.selectedImageIds().size,
@@ -37,17 +47,33 @@ export class Gallery {
   });
 
   protected drop(event: CdkDragDrop<GalleryImage[]>): void {
-    this.images.update((images) => {
-      const reorderedImages = [...images];
+    const reorderedImages = [...this.visibleImages()];
 
-      moveItemInArray(
-        reorderedImages,
-        event.previousIndex,
-        event.currentIndex,
-      );
+    moveItemInArray(
+      reorderedImages,
+      event.previousIndex,
+      event.currentIndex,
+    );
 
-      return reorderedImages;
+    this.images.set(reorderedImages);
+  }
+
+  protected pinImage(imageId: string): void {
+    this.pinnedImageIds.update((pinnedImageIds) => {
+      const nextPinnedImageIds = new Set(pinnedImageIds);
+
+      if (nextPinnedImageIds.has(imageId)) {
+        nextPinnedImageIds.delete(imageId);
+      } else {
+        nextPinnedImageIds.add(imageId);
+      }
+
+      return nextPinnedImageIds;
     });
+  }
+
+  protected isPinned(imageId: string): boolean {
+    return this.pinnedImageIds().has(imageId);
   }
 
   protected isSelected(imageId: string): boolean {
@@ -81,6 +107,13 @@ export class Gallery {
     this.images.update((images) =>
       images.filter((image) => !selectedImageIds.has(image.id)),
     );
+    this.pinnedImageIds.update((pinnedImageIds) => {
+      const nextPinnedImageIds = new Set(pinnedImageIds);
+
+      selectedImageIds.forEach((imageId) => nextPinnedImageIds.delete(imageId));
+
+      return nextPinnedImageIds;
+    });
     this.selectedImageIds.set(new Set<string>());
   }
 
@@ -97,6 +130,12 @@ export class Gallery {
       nextSelectedImageIds.delete(imageId);
 
       return nextSelectedImageIds;
+    });
+    this.pinnedImageIds.update((pinnedImageIds) => {
+      const nextPinnedImageIds = new Set(pinnedImageIds);
+      nextPinnedImageIds.delete(imageId);
+
+      return nextPinnedImageIds;
     });
   }
 }
