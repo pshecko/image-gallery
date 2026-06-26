@@ -31,17 +31,18 @@
     cdkDropList
     cdkDropListOrientation="mixed"
     data-testid="gallery-grid"
-    [cdkDropListData]="images()"
+    [cdkDropListData]="visibleImages()"
     (cdkDropListDropped)="drop($event)"
     class="grid grid-cols-2 gap-4 md:grid-cols-4 lg:grid-cols-5"
   >
-    @for (image of images(); track image.id; let first = $first) {
+    @for (image of visibleImages(); track image.id; let first = $first) {
     <app-image-item
       cdkDrag
       class="block cursor-grab active:cursor-grabbing"
       [image]="image"
       [isFeatured]="first"
       [isSelected]="isSelected(image.id)"
+      [isPinned]="isPinned(image.id)"
       (selectImage)="toggleSelection($event)"
       (deleteImage)="removeImage($event)"
       (pinImage)="pinImage($event)"

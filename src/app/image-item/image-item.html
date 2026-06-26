@@ -37,10 +37,11 @@
     <button
       pButton
       type="button"
-      label="Pin"
+      [label]="isPinned() ? 'Unpin' : 'Pin'"
       severity="secondary"
       size="small"
-      [attr.aria-label]="'Pin ' + image().title"
+      [attr.aria-label]="(isPinned() ? 'Unpin ' : 'Pin ') + image().title"
+      [attr.aria-pressed]="isPinned()"
       (click)="onPinClick($event)"
     ></button>
 
