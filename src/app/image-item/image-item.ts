@@ -15,6 +15,7 @@ export class ImageItem {
   readonly isSelected = input(false);
   readonly selectImage = output<string>();
   readonly deleteImage = output<string>();
+  readonly pinImage = output<string>();
 
   protected onSelectClick(event: MouseEvent): void {
     event.stopPropagation();
@@ -30,6 +31,11 @@ export class ImageItem {
   protected onCheckboxChange(event: Event): void {
     event.stopPropagation();
     this.selectImage.emit(this.image().id);
+  }
+
+  protected onPinClick(event: MouseEvent): void {
+    event.stopPropagation();
+    this.pinImage.emit(this.image().id);
   }
 
   protected onDeleteClick(event: MouseEvent): void {

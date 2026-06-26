@@ -50,6 +50,21 @@ export class Gallery {
     });
   }
 
+  protected pinImage(imageId: string): void {
+    this.images.update((images) => {
+      const currentIndex = images.findIndex((image) => image.id === imageId);
+
+      if (currentIndex <= 0) {
+        return images;
+      }
+
+      const reorderedImages = [...images];
+      const [pinnedImage] = reorderedImages.splice(currentIndex, 1);
+
+      return [pinnedImage, ...reorderedImages];
+    });
+  }
+
   protected isSelected(imageId: string): boolean {
     return this.selectedImageIds().has(imageId);
   }
