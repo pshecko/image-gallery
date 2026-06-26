@@ -28,6 +28,22 @@ function changeCheckbox(compiled: HTMLElement, imageNumber: number): void {
   checkbox.dispatchEvent(new Event('change', { bubbles: true }));
 }
 
+function clickPinButton(compiled: HTMLElement, imageNumber: number): void {
+  const pinButton = compiled.querySelector(
+    `button[aria-label="Pin Imagen ${imageNumber}"]`,
+  ) as HTMLButtonElement;
+
+  pinButton.click();
+}
+
+function clickUnpinButton(compiled: HTMLElement, imageNumber: number): void {
+  const unpinButton = compiled.querySelector(
+    `button[aria-label="Unpin Imagen ${imageNumber}"]`,
+  ) as HTMLButtonElement;
+
+  unpinButton.click();
+}
+
 describe('Gallery', () => {
   afterEach(() => {
     vi.restoreAllMocks();
@@ -49,15 +65,13 @@ describe('Gallery', () => {
     expect(compiled.querySelectorAll('app-image-item').length).toBe(galleryImages.length);
   });
 
-  it('should mark the first image as featured', async () => {
+  it('should not highlight any images before they are pinned', async () => {
     const fixture = TestBed.createComponent(Gallery);
     await fixture.whenStable();
 
     const compiled = fixture.nativeElement as HTMLElement;
-    const cards = compiled.querySelectorAll('.image-card');
 
-    expect(cards[0]?.classList.contains('featured')).toBe(true);
-    expect(cards[1]?.classList.contains('featured')).toBe(false);
+    expect(compiled.querySelectorAll('.image-card.pinned').length).toBe(0);
   });
 
   it('should use the responsive grid required by the briefing', async () => {
@@ -111,8 +125,83 @@ describe('Gallery', () => {
       'Imagen 3',
       'Imagen 1',
     ]);
-    expect(cards[0]?.classList.contains('featured')).toBe(true);
-    expect(cards[2]?.classList.contains('featured')).toBe(false);
+    expect(cards[0]?.classList.contains('pinned')).toBe(false);
+    expect(cards[2]?.classList.contains('pinned')).toBe(false);
+  });
+
+  it('should move a pinned image above the other images', async () => {
+    const fixture = TestBed.createComponent(Gallery);
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    const compiled = fixture.nativeElement as HTMLElement;
+
+    clickPinButton(compiled, 3);
+    fixture.detectChanges();
+
+    const cards = compiled.querySelectorAll('.image-card');
+
+    expect(getItemTitles(compiled).slice(0, 3)).toEqual([
+      'Imagen 3',
+      'Imagen 1',
+      'Imagen 2',
+    ]);
+    expect(cards[0]?.classList.contains('pinned')).toBe(true);
+    expect(cards[1]?.classList.contains('pinned')).toBe(false);
+  });
+
+  it('should keep multiple pinned images above unpinned images', async () => {
+    const fixture = TestBed.createComponent(Gallery);
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    const compiled = fixture.nativeElement as HTMLElement;
+
+    clickPinButton(compiled, 3);
+    fixture.detectChanges();
+
+    clickPinButton(compiled, 5);
+    fixture.detectChanges();
+
+    expect(getItemTitles(compiled)).toEqual([
+      'Imagen 3',
+      'Imagen 5',
+      'Imagen 1',
+      'Imagen 2',
+      'Imagen 4',
+      'Imagen 6',
+    ]);
+    expect(
+      compiled.querySelector('button[aria-label="Unpin Imagen 3"]'),
+    ).not.toBeNull();
+    expect(
+      compiled.querySelector('button[aria-label="Unpin Imagen 5"]'),
+    ).not.toBeNull();
+    expect(compiled.querySelectorAll('.image-card.pinned').length).toBe(2);
+  });
+
+  it('should move an unpinned image back with the other unpinned images', async () => {
+    const fixture = TestBed.createComponent(Gallery);
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    const compiled = fixture.nativeElement as HTMLElement;
+
+    clickPinButton(compiled, 3);
+    fixture.detectChanges();
+
+    clickUnpinButton(compiled, 3);
+    fixture.detectChanges();
+
+    expect(getItemTitles(compiled).slice(0, 3)).toEqual([
+      'Imagen 1',
+      'Imagen 2',
+      'Imagen 3',
+    ]);
+    expect(
+      compiled.querySelector('button[aria-label="Pin Imagen 3"]'),
+    ).not.toBeNull();
+    expect(compiled.querySelectorAll('.image-card.pinned').length).toBe(0);
   });
 
   it('should select and deselect an image', async () => {
