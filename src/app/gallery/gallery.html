@@ -35,12 +35,12 @@
     (cdkDropListDropped)="drop($event)"
     class="grid grid-cols-2 gap-4 md:grid-cols-4 lg:grid-cols-5"
   >
-    @for (image of visibleImages(); track image.id; let first = $first) {
+    @for (image of visibleImages(); track image.id) {
     <app-image-item
       cdkDrag
       class="block cursor-grab active:cursor-grabbing"
       [image]="image"
-      [isFeatured]="first"
+      [isFeatured]="isPinned(image.id)"
       [isSelected]="isSelected(image.id)"
       [isPinned]="isPinned(image.id)"
       (selectImage)="toggleSelection($event)"
