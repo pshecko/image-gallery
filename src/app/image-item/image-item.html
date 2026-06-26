@@ -5,6 +5,14 @@
   [class.md:col-span-2]="isFeatured()"
   [class.md:row-span-2]="isFeatured()"
 >
+  <input
+    type="checkbox"
+    class="absolute left-5 top-5 z-10 h-5 w-5 rounded border-gray-500 bg-white accent-blue-700 shadow-sm"
+    [checked]="isSelected()"
+    [attr.aria-label]="'Seleccionar ' + image().title"
+    (change)="onCheckboxChange($event)"
+  />
+
   <img
     class="mb-3 aspect-3/2 w-full rounded object-cover"
     [src]="image().src"
@@ -17,19 +25,11 @@
     role="button"
     tabindex="0"
     [attr.aria-pressed]="isSelected()"
-    [attr.aria-label]="'Seleccionar ' + image().title"
+    [attr.aria-label]="'Alternar seleccion de ' + image().title"
     (click)="onSelectClick($event)"
     (keydown.enter)="onSelectKeydown($event)"
     (keydown.space)="onSelectKeydown($event)"
   />
-
-  @if (isSelected()) {
-  <span
-    class="absolute right-5 top-5 rounded bg-blue-700 px-2 py-1 text-sm font-semibold text-white"
-  >
-    Seleccionada
-  </span>
-  }
 
   <h2 class="text-base font-semibold text-gray-900">{{ image().title }}</h2>
 
