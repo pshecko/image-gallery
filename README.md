@@ -45,7 +45,7 @@ npm test
 Para ejecutar tests con cobertura:
 
 ```bash
-ng test --coverage --coverage-reporters=text-summary --watch=false
+npm run test:coverage
 ```
 
 ## Build

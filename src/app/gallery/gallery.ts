@@ -1,19 +1,9 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  computed,
-  signal,
-} from '@angular/core';
-import {
-  CdkDrag,
-  CdkDragDrop,
-  CdkDropList,
-  moveItemInArray,
-} from '@angular/cdk/drag-drop';
+import { ChangeDetectionStrategy, Component, computed, signal } from '@angular/core';
+import { CdkDrag, CdkDragDrop, CdkDropList, moveItemInArray } from '@angular/cdk/drag-drop';
 import { ButtonModule } from 'primeng/button';
 
 import { galleryImages } from '../data/gallery-images';
-import { ImageItem } from '../image-item/image-item';
+import { ImageItem, MoveDirection } from '../image-item/image-item';
 import { GalleryImage } from '../models/gallery-image.model';
 
 @Component({
@@ -24,88 +14,52 @@ import { GalleryImage } from '../models/gallery-image.model';
 })
 export class Gallery {
   protected readonly images = signal([...galleryImages]);
-  protected readonly featuredImageIds = signal(new Set<string>());
-  protected readonly visibleImages = computed(() => {
-    const images = this.images();
-    const featuredImageIds = this.featuredImageIds();
-
-    return [
-      ...images.filter((image) => featuredImageIds.has(image.id)),
-      ...images.filter((image) => !featuredImageIds.has(image.id)),
-    ];
-  });
-  protected readonly draggableImages = computed(() => {
-    const featuredImageIds = this.featuredImageIds();
-
-    return this.images().filter((image) => !featuredImageIds.has(image.id));
-  });
+  protected readonly visibleImages = computed(() => this.images());
   protected readonly selectedImageIds = signal(new Set<string>());
-  protected readonly selectedCount = computed(
-    () => this.selectedImageIds().size,
-  );
+  protected readonly selectedCount = computed(() => this.selectedImageIds().size);
   protected readonly selectedCountLabel = computed(() => {
     const count = this.selectedCount();
 
-    return count === 1
-      ? '1 imagen seleccionada'
-      : `${count} imagenes seleccionadas`;
+    return count === 1 ? '1 imagen seleccionada' : `${count} imagenes seleccionadas`;
   });
 
   protected drop(event: CdkDragDrop<GalleryImage[]>): void {
-    const featuredImageIds = this.featuredImageIds();
-    const reorderedDraggableImages = [...this.draggableImages()];
-
-    moveItemInArray(
-      reorderedDraggableImages,
-      event.previousIndex,
-      event.currentIndex,
-    );
-
     this.images.update((images) => {
-      let draggableImageIndex = 0;
+      const reorderedImages = [...images];
 
-      return images.map((image) => {
-        if (featuredImageIds.has(image.id)) {
-          return image;
-        }
+      moveItemInArray(reorderedImages, event.previousIndex, event.currentIndex);
 
-        return reorderedDraggableImages[draggableImageIndex++];
-      });
+      return reorderedImages;
     });
   }
 
-  protected toggleFeaturedImage(imageId: string): void {
-    this.featuredImageIds.update((featuredImageIds) => {
-      const nextFeaturedImageIds = new Set(featuredImageIds);
+  protected moveImage(imageId: string, direction: MoveDirection): void {
+    this.images.update((images) => {
+      const currentIndex = images.findIndex((image) => image.id === imageId);
+      const nextIndex = direction === 'previous' ? currentIndex - 1 : currentIndex + 1;
 
-      if (nextFeaturedImageIds.has(imageId)) {
-        nextFeaturedImageIds.delete(imageId);
-      } else {
-        nextFeaturedImageIds.add(imageId);
+      if (currentIndex === -1 || nextIndex < 0 || nextIndex >= images.length) {
+        return images;
       }
 
-      return nextFeaturedImageIds;
+      const reorderedImages = [...images];
+
+      moveItemInArray(reorderedImages, currentIndex, nextIndex);
+
+      return reorderedImages;
     });
   }
 
-  protected featureSelectedImages(): void {
-    const selectedImageIds = this.selectedImageIds();
-
-    if (selectedImageIds.size === 0) {
-      return;
-    }
-
-    this.featuredImageIds.update((featuredImageIds) => {
-      const nextFeaturedImageIds = new Set(featuredImageIds);
-
-      selectedImageIds.forEach((imageId) => nextFeaturedImageIds.add(imageId));
-
-      return nextFeaturedImageIds;
-    });
+  protected canMovePrevious(imageIndex: number): boolean {
+    return imageIndex > 0;
   }
 
-  protected isFeatured(imageId: string): boolean {
-    return this.featuredImageIds().has(imageId);
+  protected canMoveNext(imageIndex: number): boolean {
+    return imageIndex < this.visibleImages().length - 1;
+  }
+
+  protected isFeatured(imageIndex: number): boolean {
+    return imageIndex === 0;
   }
 
   protected isSelected(imageId: string): boolean {
@@ -129,25 +83,11 @@ export class Gallery {
   protected deleteSelectedImages(): void {
     const selectedImageIds = this.selectedImageIds();
 
-    if (
-      selectedImageIds.size === 0 ||
-      !window.confirm(`Eliminar ${this.selectedCountLabel()}?`)
-    ) {
+    if (selectedImageIds.size === 0 || !window.confirm(`Eliminar ${this.selectedCountLabel()}?`)) {
       return;
     }
 
-    this.images.update((images) =>
-      images.filter((image) => !selectedImageIds.has(image.id)),
-    );
-    this.featuredImageIds.update((featuredImageIds) => {
-      const nextFeaturedImageIds = new Set(featuredImageIds);
-
-      selectedImageIds.forEach((imageId) =>
-        nextFeaturedImageIds.delete(imageId),
-      );
-
-      return nextFeaturedImageIds;
-    });
+    this.images.update((images) => images.filter((image) => !selectedImageIds.has(image.id)));
     this.selectedImageIds.set(new Set<string>());
   }
 
@@ -156,20 +96,12 @@ export class Gallery {
       return;
     }
 
-    this.images.update((images) =>
-      images.filter((image) => image.id !== imageId),
-    );
+    this.images.update((images) => images.filter((image) => image.id !== imageId));
     this.selectedImageIds.update((selectedImageIds) => {
       const nextSelectedImageIds = new Set(selectedImageIds);
       nextSelectedImageIds.delete(imageId);
 
       return nextSelectedImageIds;
-    });
-    this.featuredImageIds.update((featuredImageIds) => {
-      const nextFeaturedImageIds = new Set(featuredImageIds);
-      nextFeaturedImageIds.delete(imageId);
-
-      return nextFeaturedImageIds;
     });
   }
 }
