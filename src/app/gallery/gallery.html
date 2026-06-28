@@ -5,21 +5,45 @@
   </header>
 
   @if (selectedCount() > 0) {
+    @let selectedCountText = selectedCountLabel();
+
     <div
       data-testid="selection-toolbar"
       class="mb-4 flex flex-wrap items-center justify-between gap-3 rounded border border-blue-200 bg-blue-50 p-3"
     >
-      <p class="font-semibold text-blue-900">{{ selectedCountLabel() }}</p>
+      <p class="font-semibold text-blue-900">{{ selectedCountText }}</p>
 
       <div class="flex flex-wrap gap-2">
         <button
           pButton
           type="button"
           class="gallery-action-button p-1.5"
+          severity="secondary"
+          size="small"
+          [title]="'Feature ' + selectedCountText"
+          [attr.aria-label]="'Feature ' + selectedCountText"
+          (click)="featureSelectedImages()"
+        >
+          <svg
+            pButtonIcon
+            data-testid="batch-feature-icon"
+            class="gallery-action-icon"
+            viewBox="0 0 24 24"
+            aria-hidden="true"
+            focusable="false"
+          >
+            <use href="icons/star.svg#star" />
+          </svg>
+        </button>
+
+        <button
+          pButton
+          type="button"
+          class="gallery-action-button p-1.5"
           severity="danger"
           size="small"
-          [title]="'Eliminar ' + selectedCountLabel()"
-          [attr.aria-label]="'Eliminar ' + selectedCountLabel()"
+          [title]="'Eliminar ' + selectedCountText"
+          [attr.aria-label]="'Eliminar ' + selectedCountText"
           (click)="deleteSelectedImages()"
         >
           <svg
@@ -30,7 +54,7 @@
             aria-hidden="true"
             focusable="false"
           >
-            <use href="/icons/trash.svg#trash" />
+            <use href="icons/trash.svg#trash" />
           </svg>
         </button>
       </div>
@@ -41,26 +65,44 @@
     cdkDropList
     cdkDropListOrientation="mixed"
     data-testid="gallery-grid"
-    [cdkDropListData]="visibleImages()"
+    [cdkDropListData]="draggableImages()"
     (cdkDropListDropped)="drop($event)"
     class="grid grid-cols-2 gap-5 md:grid-cols-4 lg:grid-cols-5"
   >
     @for (image of visibleImages(); track image.id; let imageIndex = $index) {
-      <app-image-item
-        cdkDrag
-        class="block cursor-grab active:cursor-grabbing"
-        [class.lg:col-span-2]="imageIndex === 0"
-        [class.lg:row-span-2]="imageIndex === 0"
-        [image]="image"
-        [loadsEagerly]="imageIndex < 6"
-        [isSelected]="isSelected(image.id)"
-        [isFeatured]="isFeatured(imageIndex)"
-        [canMovePrevious]="canMovePrevious(imageIndex)"
-        [canMoveNext]="canMoveNext(imageIndex)"
-        (selectImage)="toggleSelection($event)"
-        (deleteImage)="removeImage($event)"
-        (moveImage)="moveImage($event.imageId, $event.direction)"
-      />
+      @let imageIsFeatured = isFeatured(image.id);
+      @let imageIsSelected = isSelected(image.id);
+
+      @if (imageIsFeatured) {
+        <app-image-item
+          class="block"
+          [class.lg:col-span-2]="imageIsFeatured"
+          [class.lg:row-span-2]="imageIsFeatured"
+          [image]="image"
+          [loadsEagerly]="imageIndex < 6"
+          [isSelected]="imageIsSelected"
+          [isFeatured]="imageIsFeatured"
+          [isFeatureSelected]="imageIsFeatured"
+          (selectImage)="toggleSelection($event)"
+          (deleteImage)="removeImage($event)"
+          (featureImage)="toggleFeaturedImage($event)"
+        />
+      } @else {
+        <app-image-item
+          cdkDrag
+          class="block cursor-grab active:cursor-grabbing"
+          [class.lg:col-span-2]="imageIsFeatured"
+          [class.lg:row-span-2]="imageIsFeatured"
+          [image]="image"
+          [loadsEagerly]="imageIndex < 6"
+          [isSelected]="imageIsSelected"
+          [isFeatured]="imageIsFeatured"
+          [isFeatureSelected]="imageIsFeatured"
+          (selectImage)="toggleSelection($event)"
+          (deleteImage)="removeImage($event)"
+          (featureImage)="toggleFeaturedImage($event)"
+        />
+      }
     }
   </div>
 </section>
