@@ -1,23 +1,28 @@
+@let currentImage = image();
+@let selected = isSelected();
+@let featured = isFeatured();
+@let featureSelected = isFeatureSelected();
+
 <article
   class="image-card relative h-full overflow-hidden rounded border border-gray-300 bg-white"
-  [class.featured]="isFeatured()"
-  [class.selected]="isSelected()"
+  [class.featured]="featured"
+  [class.selected]="selected"
 >
   <input
-    [id]="'select-image-' + image().id"
+    [id]="'select-image-' + currentImage.id"
     type="checkbox"
     class="absolute left-5 top-5 z-10 h-5 w-5 rounded border-gray-500 bg-white accent-blue-700 shadow-sm"
-    [checked]="isSelected()"
-    [attr.aria-label]="'Seleccionar ' + image().title"
+    [checked]="selected"
+    [attr.aria-label]="'Seleccionar ' + currentImage.title"
     (change)="onCheckboxChange($event)"
   />
 
-  <label class="block cursor-pointer" [attr.for]="'select-image-' + image().id">
+  <label class="block cursor-pointer" [attr.for]="'select-image-' + currentImage.id">
     @if (loadsEagerly()) {
       <img
         class="aspect-3/2 w-full rounded-t object-cover"
-        [ngSrc]="image().src"
-        [alt]="image().alt"
+        [ngSrc]="currentImage.src"
+        [alt]="currentImage.alt"
         width="480"
         height="320"
         decoding="async"
@@ -27,8 +32,8 @@
     } @else {
       <img
         class="aspect-3/2 w-full rounded-t object-cover"
-        [ngSrc]="image().src"
-        [alt]="image().alt"
+        [ngSrc]="currentImage.src"
+        [alt]="currentImage.alt"
         width="480"
         height="320"
         decoding="async"
@@ -43,10 +48,10 @@
     <div class="image-card-header flex items-center justify-between gap-1">
       <h2
         class="min-w-0 flex-1 truncate text-base font-semibold"
-        [class.text-gray-900]="!isFeatured()"
-        [class.text-slate-100]="isFeatured()"
+        [class.text-gray-900]="!featured"
+        [class.text-slate-100]="featured"
       >
-        {{ image().title }}
+        {{ currentImage.title }}
       </h2>
 
       <div class="image-card-actions ml-auto flex shrink-0 gap-1">
@@ -56,70 +61,21 @@
           class="gallery-action-button p-1.5"
           severity="secondary"
           size="small"
-          title="Mover antes"
-          [attr.aria-label]="'Mover ' + image().title + ' antes'"
-          [disabled]="!canMovePrevious()"
-          (click)="onMoveClick($event, 'previous')"
+          [title]="featureSelected ? 'Unfeature' : 'Feature'"
+          [attr.aria-label]="(featureSelected ? 'Unfeature ' : 'Feature ') + currentImage.title"
+          [attr.aria-pressed]="featureSelected"
+          (click)="onFeatureClick($event)"
         >
           <svg
             pButtonIcon
-            data-testid="move-previous-icon"
+            data-testid="feature-icon"
             class="gallery-action-icon"
             viewBox="0 0 24 24"
             aria-hidden="true"
             focusable="false"
           >
-            <path
-              d="M12 19V5"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-            />
-            <path
-              d="M6 11l6-6 6 6"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            />
-          </svg>
-        </button>
-
-        <button
-          pButton
-          type="button"
-          class="gallery-action-button p-1.5"
-          severity="secondary"
-          size="small"
-          title="Mover despues"
-          [attr.aria-label]="'Mover ' + image().title + ' despues'"
-          [disabled]="!canMoveNext()"
-          (click)="onMoveClick($event, 'next')"
-        >
-          <svg
-            pButtonIcon
-            data-testid="move-next-icon"
-            class="gallery-action-icon"
-            viewBox="0 0 24 24"
-            aria-hidden="true"
-            focusable="false"
-          >
-            <path
-              d="M12 5v14"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-            />
-            <path
-              d="M18 13l-6 6-6-6"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
+            <use
+              [attr.href]="featureSelected ? 'icons/star.svg#star-fill' : 'icons/star.svg#star'"
             />
           </svg>
         </button>
@@ -131,7 +87,7 @@
           severity="danger"
           size="small"
           title="Eliminar"
-          [attr.aria-label]="'Eliminar ' + image().title"
+          [attr.aria-label]="'Eliminar ' + currentImage.title"
           (click)="onDeleteClick($event)"
         >
           <svg
@@ -142,7 +98,7 @@
             aria-hidden="true"
             focusable="false"
           >
-            <use href="/icons/trash.svg#trash" />
+            <use href="icons/trash.svg#trash" />
           </svg>
         </button>
       </div>

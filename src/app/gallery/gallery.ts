@@ -3,8 +3,43 @@ import { CdkDrag, CdkDragDrop, CdkDropList, moveItemInArray } from '@angular/cdk
 import { ButtonModule } from 'primeng/button';
 
 import { galleryImages } from '../data/gallery-images';
-import { ImageItem, MoveDirection } from '../image-item/image-item';
+import { ImageItem } from '../image-item/image-item';
 import { GalleryImage } from '../models/gallery-image.model';
+
+function toggleImageId(imageIds: ReadonlySet<string>, imageId: string): Set<string> {
+  const nextImageIds = new Set(imageIds);
+
+  if (nextImageIds.has(imageId)) {
+    nextImageIds.delete(imageId);
+  } else {
+    nextImageIds.add(imageId);
+  }
+
+  return nextImageIds;
+}
+
+function addImageIds(imageIds: ReadonlySet<string>, imageIdsToAdd: Iterable<string>): Set<string> {
+  const nextImageIds = new Set(imageIds);
+
+  for (const imageId of imageIdsToAdd) {
+    nextImageIds.add(imageId);
+  }
+
+  return nextImageIds;
+}
+
+function deleteImageIds(
+  imageIds: ReadonlySet<string>,
+  imageIdsToDelete: Iterable<string>,
+): Set<string> {
+  const nextImageIds = new Set(imageIds);
+
+  for (const imageId of imageIdsToDelete) {
+    nextImageIds.delete(imageId);
+  }
+
+  return nextImageIds;
+}
 
 @Component({
   selector: 'app-gallery',
@@ -14,7 +49,21 @@ import { GalleryImage } from '../models/gallery-image.model';
 })
 export class Gallery {
   protected readonly images = signal([...galleryImages]);
-  protected readonly visibleImages = computed(() => this.images());
+  protected readonly featuredImageIds = signal(new Set<string>());
+  protected readonly visibleImages = computed(() => {
+    const images = this.images();
+    const featuredImageIds = this.featuredImageIds();
+
+    return [
+      ...images.filter((image) => featuredImageIds.has(image.id)),
+      ...images.filter((image) => !featuredImageIds.has(image.id)),
+    ];
+  });
+  protected readonly draggableImages = computed(() => {
+    const featuredImageIds = this.featuredImageIds();
+
+    return this.images().filter((image) => !featuredImageIds.has(image.id));
+  });
   protected readonly selectedImageIds = signal(new Set<string>());
   protected readonly selectedCount = computed(() => this.selectedImageIds().size);
   protected readonly selectedCountLabel = computed(() => {
@@ -24,42 +73,46 @@ export class Gallery {
   });
 
   protected drop(event: CdkDragDrop<GalleryImage[]>): void {
+    if (event.previousIndex === event.currentIndex) {
+      return;
+    }
+
+    const featuredImageIds = this.featuredImageIds();
+    const reorderedDraggableImages = [...this.draggableImages()];
+
+    moveItemInArray(reorderedDraggableImages, event.previousIndex, event.currentIndex);
+
     this.images.update((images) => {
-      const reorderedImages = [...images];
+      let draggableImageIndex = 0;
 
-      moveItemInArray(reorderedImages, event.previousIndex, event.currentIndex);
+      return images.map((image) => {
+        if (featuredImageIds.has(image.id)) {
+          return image;
+        }
 
-      return reorderedImages;
+        return reorderedDraggableImages[draggableImageIndex++];
+      });
     });
   }
 
-  protected moveImage(imageId: string, direction: MoveDirection): void {
-    this.images.update((images) => {
-      const currentIndex = images.findIndex((image) => image.id === imageId);
-      const nextIndex = direction === 'previous' ? currentIndex - 1 : currentIndex + 1;
-
-      if (currentIndex === -1 || nextIndex < 0 || nextIndex >= images.length) {
-        return images;
-      }
-
-      const reorderedImages = [...images];
-
-      moveItemInArray(reorderedImages, currentIndex, nextIndex);
-
-      return reorderedImages;
-    });
+  protected toggleFeaturedImage(imageId: string): void {
+    this.featuredImageIds.update((featuredImageIds) => toggleImageId(featuredImageIds, imageId));
   }
 
-  protected canMovePrevious(imageIndex: number): boolean {
-    return imageIndex > 0;
+  protected featureSelectedImages(): void {
+    const selectedImageIds = this.selectedImageIds();
+
+    if (selectedImageIds.size === 0) {
+      return;
+    }
+
+    this.featuredImageIds.update((featuredImageIds) =>
+      addImageIds(featuredImageIds, selectedImageIds),
+    );
   }
 
-  protected canMoveNext(imageIndex: number): boolean {
-    return imageIndex < this.visibleImages().length - 1;
-  }
-
-  protected isFeatured(imageIndex: number): boolean {
-    return imageIndex === 0;
+  protected isFeatured(imageId: string): boolean {
+    return this.featuredImageIds().has(imageId);
   }
 
   protected isSelected(imageId: string): boolean {
@@ -67,17 +120,7 @@ export class Gallery {
   }
 
   protected toggleSelection(imageId: string): void {
-    this.selectedImageIds.update((selectedImageIds) => {
-      const nextSelectedImageIds = new Set(selectedImageIds);
-
-      if (nextSelectedImageIds.has(imageId)) {
-        nextSelectedImageIds.delete(imageId);
-      } else {
-        nextSelectedImageIds.add(imageId);
-      }
-
-      return nextSelectedImageIds;
-    });
+    this.selectedImageIds.update((selectedImageIds) => toggleImageId(selectedImageIds, imageId));
   }
 
   protected deleteSelectedImages(): void {
@@ -88,6 +131,9 @@ export class Gallery {
     }
 
     this.images.update((images) => images.filter((image) => !selectedImageIds.has(image.id)));
+    this.featuredImageIds.update((featuredImageIds) =>
+      deleteImageIds(featuredImageIds, selectedImageIds),
+    );
     this.selectedImageIds.set(new Set<string>());
   }
 
@@ -97,11 +143,7 @@ export class Gallery {
     }
 
     this.images.update((images) => images.filter((image) => image.id !== imageId));
-    this.selectedImageIds.update((selectedImageIds) => {
-      const nextSelectedImageIds = new Set(selectedImageIds);
-      nextSelectedImageIds.delete(imageId);
-
-      return nextSelectedImageIds;
-    });
+    this.selectedImageIds.update((selectedImageIds) => deleteImageIds(selectedImageIds, [imageId]));
+    this.featuredImageIds.update((featuredImageIds) => deleteImageIds(featuredImageIds, [imageId]));
   }
 }
