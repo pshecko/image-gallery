@@ -76,7 +76,7 @@
     <app-image-item
       class="block"
       [image]="image"
-      [loadsEagerly]="imageIndex === 0"
+      [loadsEagerly]="imageIndex < 5"
       [isSelected]="isSelected(image.id)"
       [isFeatured]="isFeatured(image.id)"
       (selectImage)="toggleSelection($event)"
@@ -88,7 +88,7 @@
       cdkDrag
       class="block cursor-grab active:cursor-grabbing"
       [image]="image"
-      [loadsEagerly]="imageIndex === 0"
+      [loadsEagerly]="imageIndex < 5"
       [isSelected]="isSelected(image.id)"
       [isFeatured]="isFeatured(image.id)"
       (selectImage)="toggleSelection($event)"
