@@ -52,6 +52,59 @@ describe('ImageItem', () => {
     expect(compiled.textContent).toContain('Imagen 1');
   });
 
+  it('should render the image flush with the card top and full card width', () => {
+    const fixture = TestBed.createComponent(ImageItemHost);
+    fixture.detectChanges();
+
+    const compiled = fixture.nativeElement as HTMLElement;
+    const card = compiled.querySelector('.image-card');
+    const image = compiled.querySelector('img');
+    const body = compiled.querySelector('.image-card-body');
+
+    expect(card?.classList.contains('p-3')).toBe(false);
+    expect(card?.classList.contains('overflow-hidden')).toBe(true);
+    expect(image?.classList.contains('w-full')).toBe(true);
+    expect(image?.classList.contains('mb-3')).toBe(false);
+    expect(image?.classList.contains('rounded-t')).toBe(true);
+    expect(body?.classList.contains('p-3')).toBe(true);
+    expect(body?.classList.contains('px-2')).toBe(false);
+    expect(body?.classList.contains('py-3')).toBe(false);
+    expect(body?.classList.contains('sm:p-3')).toBe(false);
+  });
+
+  it('should place the title and card actions on the same row', () => {
+    const fixture = TestBed.createComponent(ImageItemHost);
+    fixture.detectChanges();
+
+    const compiled = fixture.nativeElement as HTMLElement;
+    const header = compiled.querySelector('.image-card-header');
+    const title = compiled.querySelector('h2');
+    const actions = compiled.querySelector('.image-card-actions');
+    const featureButton = compiled.querySelector(
+      'button[aria-label="Feature Imagen 1"]',
+    );
+    const deleteButton = compiled.querySelector(
+      'button[aria-label="Eliminar Imagen 1"]',
+    );
+
+    expect(header?.classList.contains('flex')).toBe(true);
+    expect(header?.classList.contains('items-center')).toBe(true);
+    expect(header?.classList.contains('justify-between')).toBe(true);
+    expect(header?.classList.contains('gap-1')).toBe(true);
+    expect(title?.parentElement).toBe(header);
+    expect(title?.classList.contains('text-base')).toBe(true);
+    expect(title?.classList.contains('text-sm')).toBe(false);
+    expect(title?.classList.contains('sm:text-base')).toBe(false);
+    expect(title?.classList.contains('text-xs')).toBe(false);
+    expect(actions?.parentElement).toBe(header);
+    expect(actions?.classList.contains('ml-auto')).toBe(true);
+    expect(actions?.classList.contains('shrink-0')).toBe(true);
+    expect(actions?.classList.contains('gap-1')).toBe(true);
+    expect(actions?.classList.contains('mt-3')).toBe(false);
+    expect(actions?.contains(featureButton)).toBe(true);
+    expect(actions?.contains(deleteButton)).toBe(true);
+  });
+
   it('should load eagerly without changing the featured state', () => {
     const fixture = TestBed.createComponent(ImageItemHost);
     fixture.componentInstance.loadsEagerly = true;
@@ -122,8 +175,45 @@ describe('ImageItem', () => {
     expect(card?.classList.contains('featured')).toBe(true);
     expect(featureButton).not.toBeNull();
     expect(featureButton.getAttribute('aria-pressed')).toBe('true');
+    expect(featureButton.querySelector('use')?.getAttribute('href')).toBe(
+      '/icons/star.svg#star-fill',
+    );
     expect(title?.classList.contains('text-slate-100')).toBe(true);
     expect(title?.classList.contains('text-gray-900')).toBe(false);
+  });
+
+  it('should render icon-only feature and delete buttons with accessible labels', () => {
+    const fixture = TestBed.createComponent(ImageItemHost);
+    fixture.detectChanges();
+
+    const compiled = fixture.nativeElement as HTMLElement;
+    const featureButton = compiled.querySelector(
+      'button[aria-label="Feature Imagen 1"]',
+    ) as HTMLButtonElement;
+    const deleteButton = compiled.querySelector(
+      'button[aria-label="Eliminar Imagen 1"]',
+    ) as HTMLButtonElement;
+
+    expect(featureButton.textContent?.trim()).toBe('');
+    expect(deleteButton.textContent?.trim()).toBe('');
+    expect(featureButton.querySelector('svg[data-testid="feature-icon"]')).not
+      .toBeNull();
+    expect(deleteButton.querySelector('svg[data-testid="delete-icon"]')).not
+      .toBeNull();
+    expect(featureButton.querySelector('use')?.getAttribute('href')).toBe(
+      '/icons/star.svg#star',
+    );
+    expect(deleteButton.querySelector('use')?.getAttribute('href')).toBe(
+      '/icons/trash.svg#trash',
+    );
+    expect(featureButton.classList.contains('gallery-action-button')).toBe(
+      true,
+    );
+    expect(deleteButton.classList.contains('gallery-action-button')).toBe(true);
+    expect(featureButton.classList.contains('p-1.5')).toBe(true);
+    expect(deleteButton.classList.contains('p-1.5')).toBe(true);
+    expect(featureButton.hasAttribute('rounded')).toBe(false);
+    expect(deleteButton.hasAttribute('rounded')).toBe(false);
   });
 
   it('should emit the image id when the image is clicked', () => {
