@@ -94,31 +94,42 @@ describe('Gallery', () => {
     expect(cards[1]?.classList.contains('featured')).toBe(false);
   });
 
-  it('should use the responsive grid required by the briefing', async () => {
+  it('should use a flexible one-column-first grid with larger cards', async () => {
     const fixture = TestBed.createComponent(Gallery);
     fixture.detectChanges();
     await fixture.whenStable();
 
     const compiled = fixture.nativeElement as HTMLElement;
+    const section = compiled.querySelector('section');
     const grid = compiled.querySelector('[data-testid="gallery-grid"]');
 
-    expect(grid?.classList.contains('grid-cols-2')).toBe(true);
-    expect(grid?.classList.contains('md:grid-cols-4')).toBe(true);
-    expect(grid?.classList.contains('lg:grid-cols-5')).toBe(true);
+    expect(section?.classList.contains('max-w-7xl')).toBe(true);
+    expect(grid?.classList.contains('gallery-grid')).toBe(true);
+    expect(grid?.classList.contains('grid')).toBe(true);
+    expect(grid?.classList.contains('gap-5')).toBe(true);
+    expect(grid?.classList.contains('grid-cols-1')).toBe(false);
+    expect(grid?.classList.contains('grid-cols-2')).toBe(false);
+    expect(grid?.classList.contains('md:grid-cols-4')).toBe(false);
+    expect(grid?.classList.contains('lg:grid-cols-5')).toBe(false);
   });
 
-  it('should load the first visible image eagerly', async () => {
+  it('should load the largest flexible first row of visible images eagerly', async () => {
     const fixture = TestBed.createComponent(Gallery);
     fixture.detectChanges();
     await fixture.whenStable();
 
     const compiled = fixture.nativeElement as HTMLElement;
-    const image = compiled.querySelector(
-      'img[alt="Imagen de galeria 1"]',
-    ) as HTMLImageElement;
+    const images = Array.from(compiled.querySelectorAll('img'));
+    const firstRowImages = images.slice(0, 4);
+    const nextRowImage = images[4];
 
-    expect(image.getAttribute('loading')).toBe('eager');
-    expect(image.getAttribute('fetchpriority')).toBe('high');
+    expect(firstRowImages).toHaveLength(4);
+    firstRowImages.forEach((image) => {
+      expect(image.getAttribute('loading')).toBe('eager');
+      expect(image.getAttribute('fetchpriority')).toBe('high');
+    });
+    expect(nextRowImage?.getAttribute('loading')).toBe('lazy');
+    expect(nextRowImage?.getAttribute('fetchpriority')).toBe('auto');
   });
 
   it('should render the grid as a CDK drop list with draggable image items', async () => {
@@ -242,6 +253,12 @@ describe('Gallery', () => {
       'Imagen 2',
       'Imagen 4',
       'Imagen 6',
+      'Imagen 7',
+      'Imagen 8',
+      'Imagen 9',
+      'Imagen 10',
+      'Imagen 11',
+      'Imagen 12',
     ]);
     expect(
       compiled.querySelector('button[aria-label="Unfeature Imagen 3"]'),
@@ -345,6 +362,46 @@ describe('Gallery', () => {
     ).toContain('2 imagenes seleccionadas');
   });
 
+  it('should render icon-only buttons for selected image actions', async () => {
+    const fixture = TestBed.createComponent(Gallery);
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    const compiled = fixture.nativeElement as HTMLElement;
+
+    changeCheckbox(compiled, 1);
+    changeCheckbox(compiled, 2);
+    fixture.detectChanges();
+
+    const featureSelectedButton = compiled.querySelector(
+      'button[aria-label="Feature 2 imagenes seleccionadas"]',
+    ) as HTMLButtonElement;
+    const deleteSelectedButton = compiled.querySelector(
+      'button[aria-label="Eliminar 2 imagenes seleccionadas"]',
+    ) as HTMLButtonElement;
+
+    expect(featureSelectedButton.textContent?.trim()).toBe('');
+    expect(deleteSelectedButton.textContent?.trim()).toBe('');
+    expect(featureSelectedButton.classList.contains('gallery-action-button')).toBe(
+      true,
+    );
+    expect(deleteSelectedButton.classList.contains('gallery-action-button')).toBe(
+      true,
+    );
+    expect(featureSelectedButton.classList.contains('p-1.5')).toBe(true);
+    expect(deleteSelectedButton.classList.contains('p-1.5')).toBe(true);
+    expect(
+      featureSelectedButton
+        .querySelector('svg[data-testid="batch-feature-icon"] use')
+        ?.getAttribute('href'),
+    ).toBe('/icons/star.svg#star');
+    expect(
+      deleteSelectedButton
+        .querySelector('svg[data-testid="batch-delete-icon"] use')
+        ?.getAttribute('href'),
+    ).toBe('/icons/trash.svg#trash');
+  });
+
   it('should feature selected checkbox images from the selection toolbar', async () => {
     const fixture = TestBed.createComponent(Gallery);
     fixture.detectChanges();
@@ -366,6 +423,12 @@ describe('Gallery', () => {
       'Imagen 2',
       'Imagen 4',
       'Imagen 6',
+      'Imagen 7',
+      'Imagen 8',
+      'Imagen 9',
+      'Imagen 10',
+      'Imagen 11',
+      'Imagen 12',
     ]);
     expect(compiled.querySelectorAll('.image-card.featured').length).toBe(2);
     expect(compiled.querySelectorAll('.image-card.selected').length).toBe(2);
@@ -402,8 +465,8 @@ describe('Gallery', () => {
     expect(compiled.querySelectorAll('app-image-item').length).toBe(
       galleryImages.length - 2,
     );
-    expect(compiled.textContent).not.toContain('Imagen 1');
-    expect(compiled.textContent).not.toContain('Imagen 2');
+    expect(getItemTitles(compiled)).not.toContain('Imagen 1');
+    expect(getItemTitles(compiled)).not.toContain('Imagen 2');
     expect(
       compiled.querySelector('[data-testid="selection-toolbar"]'),
     ).toBeNull();
@@ -483,7 +546,7 @@ describe('Gallery', () => {
     expect(compiled.querySelectorAll('app-image-item').length).toBe(
       galleryImages.length - 1,
     );
-    expect(compiled.textContent).not.toContain('Imagen 1');
+    expect(getItemTitles(compiled)).not.toContain('Imagen 1');
   });
 
   it('should keep an image when deletion is cancelled', async () => {
