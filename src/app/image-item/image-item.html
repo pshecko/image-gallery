@@ -4,6 +4,7 @@
   [class.selected]="isSelected()"
 >
   <input
+    [id]="'select-image-' + image().id"
     type="checkbox"
     class="absolute left-5 top-5 z-10 h-5 w-5 rounded border-gray-500 bg-white accent-blue-700 shadow-sm"
     [checked]="isSelected()"
@@ -11,23 +12,32 @@
     (change)="onCheckboxChange($event)"
   />
 
-  <img
-    class="aspect-3/2 w-full rounded-t object-cover"
-    [src]="image().src"
-    [alt]="image().alt"
-    width="480"
-    height="320"
-    decoding="async"
-    [attr.loading]="loadsEagerly() ? 'eager' : 'lazy'"
-    [attr.fetchpriority]="loadsEagerly() ? 'high' : 'auto'"
-    role="button"
-    tabindex="0"
-    [attr.aria-pressed]="isSelected()"
-    [attr.aria-label]="'Alternar seleccion de ' + image().title"
-    (click)="onSelectClick($event)"
-    (keydown.enter)="onSelectKeydown($event)"
-    (keydown.space)="onSelectKeydown($event)"
-  />
+  <label class="block cursor-pointer" [attr.for]="'select-image-' + image().id">
+    @if (loadsEagerly()) {
+      <img
+        class="aspect-3/2 w-full rounded-t object-cover"
+        [ngSrc]="image().src"
+        [alt]="image().alt"
+        width="480"
+        height="320"
+        decoding="async"
+        sizes="(min-width: 1024px) 40vw, (min-width: 768px) 25vw, 50vw"
+        priority
+      />
+    } @else {
+      <img
+        class="aspect-3/2 w-full rounded-t object-cover"
+        [ngSrc]="image().src"
+        [alt]="image().alt"
+        width="480"
+        height="320"
+        decoding="async"
+        sizes="(min-width: 1024px) 40vw, (min-width: 768px) 25vw, 50vw"
+        loading="lazy"
+        fetchpriority="auto"
+      />
+    }
+  </label>
 
   <div class="image-card-body p-3">
     <div class="image-card-header flex items-center justify-between gap-1">
@@ -46,27 +56,70 @@
           class="gallery-action-button p-1.5"
           severity="secondary"
           size="small"
-          [title]="isFeatured() ? 'Unfeature' : 'Feature'"
-          [attr.aria-label]="
-            (isFeatured() ? 'Unfeature ' : 'Feature ') + image().title
-          "
-          [attr.aria-pressed]="isFeatured()"
-          (click)="onFeatureClick($event)"
+          title="Mover antes"
+          [attr.aria-label]="'Mover ' + image().title + ' antes'"
+          [disabled]="!canMovePrevious()"
+          (click)="onMoveClick($event, 'previous')"
         >
           <svg
             pButtonIcon
-            data-testid="feature-icon"
+            data-testid="move-previous-icon"
             class="gallery-action-icon"
             viewBox="0 0 24 24"
             aria-hidden="true"
             focusable="false"
           >
-            <use
-              [attr.href]="
-                isFeatured()
-                  ? '/icons/star.svg#star-fill'
-                  : '/icons/star.svg#star'
-              "
+            <path
+              d="M12 19V5"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+            />
+            <path
+              d="M6 11l6-6 6 6"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
+          </svg>
+        </button>
+
+        <button
+          pButton
+          type="button"
+          class="gallery-action-button p-1.5"
+          severity="secondary"
+          size="small"
+          title="Mover despues"
+          [attr.aria-label]="'Mover ' + image().title + ' despues'"
+          [disabled]="!canMoveNext()"
+          (click)="onMoveClick($event, 'next')"
+        >
+          <svg
+            pButtonIcon
+            data-testid="move-next-icon"
+            class="gallery-action-icon"
+            viewBox="0 0 24 24"
+            aria-hidden="true"
+            focusable="false"
+          >
+            <path
+              d="M12 5v14"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+            />
+            <path
+              d="M18 13l-6 6-6-6"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
             />
           </svg>
         </button>

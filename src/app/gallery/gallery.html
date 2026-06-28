@@ -1,101 +1,66 @@
 <section class="mx-auto max-w-7xl px-4 py-8" aria-labelledby="gallery-title">
   <header class="mb-6">
-    <h1 id="gallery-title" class="text-3xl font-bold text-gray-900">
-      Galeria de imagenes
-    </h1>
-    <p class="mt-2 text-gray-600">
-      Galeria de practica con imagenes de marcador de posicion.
-    </p>
+    <h1 id="gallery-title" class="text-3xl font-bold text-gray-900">Galeria de imagenes</h1>
+    <p class="mt-2 text-gray-600">Galeria de practica con imagenes de marcador de posicion.</p>
   </header>
 
   @if (selectedCount() > 0) {
-  <div
-    data-testid="selection-toolbar"
-    class="mb-4 flex flex-wrap items-center justify-between gap-3 rounded border border-blue-200 bg-blue-50 p-3"
-  >
-    <p class="font-semibold text-blue-900">{{ selectedCountLabel() }}</p>
+    <div
+      data-testid="selection-toolbar"
+      class="mb-4 flex flex-wrap items-center justify-between gap-3 rounded border border-blue-200 bg-blue-50 p-3"
+    >
+      <p class="font-semibold text-blue-900">{{ selectedCountLabel() }}</p>
 
-    <div class="flex flex-wrap gap-2">
-      <button
-        pButton
-        type="button"
-        class="gallery-action-button p-1.5"
-        severity="secondary"
-        size="small"
-        [title]="'Feature ' + selectedCountLabel()"
-        [attr.aria-label]="'Feature ' + selectedCountLabel()"
-        (click)="featureSelectedImages()"
-      >
-        <svg
-          pButtonIcon
-          data-testid="batch-feature-icon"
-          class="gallery-action-icon"
-          viewBox="0 0 24 24"
-          aria-hidden="true"
-          focusable="false"
+      <div class="flex flex-wrap gap-2">
+        <button
+          pButton
+          type="button"
+          class="gallery-action-button p-1.5"
+          severity="danger"
+          size="small"
+          [title]="'Eliminar ' + selectedCountLabel()"
+          [attr.aria-label]="'Eliminar ' + selectedCountLabel()"
+          (click)="deleteSelectedImages()"
         >
-          <use href="/icons/star.svg#star" />
-        </svg>
-      </button>
-
-      <button
-        pButton
-        type="button"
-        class="gallery-action-button p-1.5"
-        severity="danger"
-        size="small"
-        [title]="'Eliminar ' + selectedCountLabel()"
-        [attr.aria-label]="'Eliminar ' + selectedCountLabel()"
-        (click)="deleteSelectedImages()"
-      >
-        <svg
-          pButtonIcon
-          data-testid="batch-delete-icon"
-          class="gallery-action-icon"
-          viewBox="0 0 24 24"
-          aria-hidden="true"
-          focusable="false"
-        >
-          <use href="/icons/trash.svg#trash" />
-        </svg>
-      </button>
+          <svg
+            pButtonIcon
+            data-testid="batch-delete-icon"
+            class="gallery-action-icon"
+            viewBox="0 0 24 24"
+            aria-hidden="true"
+            focusable="false"
+          >
+            <use href="/icons/trash.svg#trash" />
+          </svg>
+        </button>
+      </div>
     </div>
-  </div>
   }
 
   <div
     cdkDropList
     cdkDropListOrientation="mixed"
     data-testid="gallery-grid"
-    [cdkDropListData]="draggableImages()"
+    [cdkDropListData]="visibleImages()"
     (cdkDropListDropped)="drop($event)"
-    class="gallery-grid grid gap-5"
+    class="grid grid-cols-2 gap-5 md:grid-cols-4 lg:grid-cols-5"
   >
     @for (image of visibleImages(); track image.id; let imageIndex = $index) {
-    @if (isFeatured(image.id)) {
-    <app-image-item
-      class="block"
-      [image]="image"
-      [loadsEagerly]="imageIndex < 4"
-      [isSelected]="isSelected(image.id)"
-      [isFeatured]="isFeatured(image.id)"
-      (selectImage)="toggleSelection($event)"
-      (deleteImage)="removeImage($event)"
-      (featureImage)="toggleFeaturedImage($event)"
-    />
-    } @else {
-    <app-image-item
-      cdkDrag
-      class="block cursor-grab active:cursor-grabbing"
-      [image]="image"
-      [loadsEagerly]="imageIndex < 4"
-      [isSelected]="isSelected(image.id)"
-      [isFeatured]="isFeatured(image.id)"
-      (selectImage)="toggleSelection($event)"
-      (deleteImage)="removeImage($event)"
-      (featureImage)="toggleFeaturedImage($event)"
-    />
-    }
+      <app-image-item
+        cdkDrag
+        class="block cursor-grab active:cursor-grabbing"
+        [class.lg:col-span-2]="imageIndex === 0"
+        [class.lg:row-span-2]="imageIndex === 0"
+        [image]="image"
+        [loadsEagerly]="imageIndex < 6"
+        [isSelected]="isSelected(image.id)"
+        [isFeatured]="isFeatured(imageIndex)"
+        [canMovePrevious]="canMovePrevious(imageIndex)"
+        [canMoveNext]="canMoveNext(imageIndex)"
+        (selectImage)="toggleSelection($event)"
+        (deleteImage)="removeImage($event)"
+        (moveImage)="moveImage($event.imageId, $event.direction)"
+      />
     }
   </div>
 </section>
