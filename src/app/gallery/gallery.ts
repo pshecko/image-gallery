@@ -24,20 +24,20 @@ import { GalleryImage } from '../models/gallery-image.model';
 })
 export class Gallery {
   protected readonly images = signal([...galleryImages]);
-  protected readonly pinnedImageIds = signal(new Set<string>());
+  protected readonly featuredImageIds = signal(new Set<string>());
   protected readonly visibleImages = computed(() => {
     const images = this.images();
-    const pinnedImageIds = this.pinnedImageIds();
+    const featuredImageIds = this.featuredImageIds();
 
     return [
-      ...images.filter((image) => pinnedImageIds.has(image.id)),
-      ...images.filter((image) => !pinnedImageIds.has(image.id)),
+      ...images.filter((image) => featuredImageIds.has(image.id)),
+      ...images.filter((image) => !featuredImageIds.has(image.id)),
     ];
   });
   protected readonly draggableImages = computed(() => {
-    const pinnedImageIds = this.pinnedImageIds();
+    const featuredImageIds = this.featuredImageIds();
 
-    return this.images().filter((image) => !pinnedImageIds.has(image.id));
+    return this.images().filter((image) => !featuredImageIds.has(image.id));
   });
   protected readonly selectedImageIds = signal(new Set<string>());
   protected readonly selectedCount = computed(
@@ -52,7 +52,7 @@ export class Gallery {
   });
 
   protected drop(event: CdkDragDrop<GalleryImage[]>): void {
-    const pinnedImageIds = this.pinnedImageIds();
+    const featuredImageIds = this.featuredImageIds();
     const reorderedDraggableImages = [...this.draggableImages()];
 
     moveItemInArray(
@@ -65,7 +65,7 @@ export class Gallery {
       let draggableImageIndex = 0;
 
       return images.map((image) => {
-        if (pinnedImageIds.has(image.id)) {
+        if (featuredImageIds.has(image.id)) {
           return image;
         }
 
@@ -74,22 +74,38 @@ export class Gallery {
     });
   }
 
-  protected pinImage(imageId: string): void {
-    this.pinnedImageIds.update((pinnedImageIds) => {
-      const nextPinnedImageIds = new Set(pinnedImageIds);
+  protected toggleFeaturedImage(imageId: string): void {
+    this.featuredImageIds.update((featuredImageIds) => {
+      const nextFeaturedImageIds = new Set(featuredImageIds);
 
-      if (nextPinnedImageIds.has(imageId)) {
-        nextPinnedImageIds.delete(imageId);
+      if (nextFeaturedImageIds.has(imageId)) {
+        nextFeaturedImageIds.delete(imageId);
       } else {
-        nextPinnedImageIds.add(imageId);
+        nextFeaturedImageIds.add(imageId);
       }
 
-      return nextPinnedImageIds;
+      return nextFeaturedImageIds;
     });
   }
 
-  protected isPinned(imageId: string): boolean {
-    return this.pinnedImageIds().has(imageId);
+  protected featureSelectedImages(): void {
+    const selectedImageIds = this.selectedImageIds();
+
+    if (selectedImageIds.size === 0) {
+      return;
+    }
+
+    this.featuredImageIds.update((featuredImageIds) => {
+      const nextFeaturedImageIds = new Set(featuredImageIds);
+
+      selectedImageIds.forEach((imageId) => nextFeaturedImageIds.add(imageId));
+
+      return nextFeaturedImageIds;
+    });
+  }
+
+  protected isFeatured(imageId: string): boolean {
+    return this.featuredImageIds().has(imageId);
   }
 
   protected isSelected(imageId: string): boolean {
@@ -123,12 +139,14 @@ export class Gallery {
     this.images.update((images) =>
       images.filter((image) => !selectedImageIds.has(image.id)),
     );
-    this.pinnedImageIds.update((pinnedImageIds) => {
-      const nextPinnedImageIds = new Set(pinnedImageIds);
+    this.featuredImageIds.update((featuredImageIds) => {
+      const nextFeaturedImageIds = new Set(featuredImageIds);
 
-      selectedImageIds.forEach((imageId) => nextPinnedImageIds.delete(imageId));
+      selectedImageIds.forEach((imageId) =>
+        nextFeaturedImageIds.delete(imageId),
+      );
 
-      return nextPinnedImageIds;
+      return nextFeaturedImageIds;
     });
     this.selectedImageIds.set(new Set<string>());
   }
@@ -147,11 +165,11 @@ export class Gallery {
 
       return nextSelectedImageIds;
     });
-    this.pinnedImageIds.update((pinnedImageIds) => {
-      const nextPinnedImageIds = new Set(pinnedImageIds);
-      nextPinnedImageIds.delete(imageId);
+    this.featuredImageIds.update((featuredImageIds) => {
+      const nextFeaturedImageIds = new Set(featuredImageIds);
+      nextFeaturedImageIds.delete(imageId);
 
-      return nextPinnedImageIds;
+      return nextFeaturedImageIds;
     });
   }
 }
