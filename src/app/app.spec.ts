@@ -8,16 +8,15 @@ describe('App', () => {
     }).compileComponents();
   });
 
-  it('should create the app', () => {
+  it('should create the app shell with the gallery', async () => {
     const fixture = TestBed.createComponent(App);
-    const app = fixture.componentInstance;
-    expect(app).toBeTruthy();
-  });
-
-  it('should render the gallery title', async () => {
-    const fixture = TestBed.createComponent(App);
+    fixture.detectChanges();
     await fixture.whenStable();
+
     const compiled = fixture.nativeElement as HTMLElement;
+
+    expect(fixture.componentInstance).toBeTruthy();
+    expect(compiled.querySelector('main')).not.toBeNull();
     expect(compiled.querySelector('h1')?.textContent).toContain('Galeria de imagenes');
   });
 });
