@@ -30,67 +30,69 @@
   />
 
   <div class="image-card-body p-3">
-    <h2
-      class="text-base font-semibold"
-      [class.text-gray-900]="!isFeatured()"
-      [class.text-slate-100]="isFeatured()"
-    >
-      {{ image().title }}
-    </h2>
-
-    <div class="mt-3 flex flex-wrap gap-2">
-      <button
-        pButton
-        type="button"
-        class="gallery-action-button"
-        severity="secondary"
-        size="small"
-        [title]="isFeatured() ? 'Unfeature' : 'Feature'"
-        [attr.aria-label]="
-          (isFeatured() ? 'Unfeature ' : 'Feature ') + image().title
-        "
-        [attr.aria-pressed]="isFeatured()"
-        (click)="onFeatureClick($event)"
+    <div class="image-card-header flex items-center justify-between gap-1">
+      <h2
+        class="min-w-0 flex-1 truncate text-sm font-semibold"
+        [class.text-gray-900]="!isFeatured()"
+        [class.text-slate-100]="isFeatured()"
       >
-        <svg
-          pButtonIcon
-          data-testid="feature-icon"
-          class="gallery-action-icon"
-          viewBox="0 0 24 24"
-          aria-hidden="true"
-          focusable="false"
-        >
-          <use
-            [attr.href]="
-              isFeatured()
-                ? '/icons/star.svg#star-fill'
-                : '/icons/star.svg#star'
-            "
-          />
-        </svg>
-      </button>
+        {{ image().title }}
+      </h2>
 
-      <button
-        pButton
-        type="button"
-        class="gallery-action-button"
-        severity="danger"
-        size="small"
-        title="Eliminar"
-        [attr.aria-label]="'Eliminar ' + image().title"
-        (click)="onDeleteClick($event)"
-      >
-        <svg
-          pButtonIcon
-          data-testid="delete-icon"
-          class="gallery-action-icon"
-          viewBox="0 0 24 24"
-          aria-hidden="true"
-          focusable="false"
+      <div class="image-card-actions ml-auto flex shrink-0 gap-1">
+        <button
+          pButton
+          type="button"
+          class="gallery-action-button"
+          severity="secondary"
+          size="small"
+          [title]="isFeatured() ? 'Unfeature' : 'Feature'"
+          [attr.aria-label]="
+            (isFeatured() ? 'Unfeature ' : 'Feature ') + image().title
+          "
+          [attr.aria-pressed]="isFeatured()"
+          (click)="onFeatureClick($event)"
         >
-          <use href="/icons/trash.svg#trash" />
-        </svg>
-      </button>
+          <svg
+            pButtonIcon
+            data-testid="feature-icon"
+            class="gallery-action-icon"
+            viewBox="0 0 24 24"
+            aria-hidden="true"
+            focusable="false"
+          >
+            <use
+              [attr.href]="
+                isFeatured()
+                  ? '/icons/star.svg#star-fill'
+                  : '/icons/star.svg#star'
+              "
+            />
+          </svg>
+        </button>
+
+        <button
+          pButton
+          type="button"
+          class="gallery-action-button"
+          severity="danger"
+          size="small"
+          title="Eliminar"
+          [attr.aria-label]="'Eliminar ' + image().title"
+          (click)="onDeleteClick($event)"
+        >
+          <svg
+            pButtonIcon
+            data-testid="delete-icon"
+            class="gallery-action-icon"
+            viewBox="0 0 24 24"
+            aria-hidden="true"
+            focusable="false"
+          >
+            <use href="/icons/trash.svg#trash" />
+          </svg>
+        </button>
+      </div>
     </div>
   </div>
 </article>
