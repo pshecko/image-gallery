@@ -41,24 +41,52 @@
     <button
       pButton
       type="button"
-      [label]="isFeatured() ? 'Unfeature' : 'Feature'"
+      class="gallery-action-button"
       severity="secondary"
       size="small"
+      [title]="isFeatured() ? 'Unfeature' : 'Feature'"
       [attr.aria-label]="
         (isFeatured() ? 'Unfeature ' : 'Feature ') + image().title
       "
       [attr.aria-pressed]="isFeatured()"
       (click)="onFeatureClick($event)"
-    ></button>
+    >
+      <svg
+        pButtonIcon
+        data-testid="feature-icon"
+        class="gallery-action-icon"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+        focusable="false"
+      >
+        <use
+          [attr.href]="
+            isFeatured() ? '/icons/star.svg#star-fill' : '/icons/star.svg#star'
+          "
+        />
+      </svg>
+    </button>
 
     <button
       pButton
       type="button"
-      label="Eliminar"
+      class="gallery-action-button"
       severity="danger"
       size="small"
+      title="Eliminar"
       [attr.aria-label]="'Eliminar ' + image().title"
       (click)="onDeleteClick($event)"
-    ></button>
+    >
+      <svg
+        pButtonIcon
+        data-testid="delete-icon"
+        class="gallery-action-icon"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+        focusable="false"
+      >
+        <use href="/icons/trash.svg#trash" />
+      </svg>
+    </button>
   </div>
 </article>
