@@ -11,12 +11,12 @@ import { GalleryImage } from '../models/gallery-image.model';
 })
 export class ImageItem {
   readonly image = input.required<GalleryImage>();
-  readonly isFeatured = input(false);
+  readonly loadsEagerly = input(false);
   readonly isSelected = input(false);
-  readonly isPinned = input(false);
+  readonly isFeatured = input(false);
   readonly selectImage = output<string>();
   readonly deleteImage = output<string>();
-  readonly pinImage = output<string>();
+  readonly featureImage = output<string>();
 
   protected onSelectClick(event: MouseEvent): void {
     event.stopPropagation();
@@ -34,9 +34,9 @@ export class ImageItem {
     this.selectImage.emit(this.image().id);
   }
 
-  protected onPinClick(event: MouseEvent): void {
+  protected onFeatureClick(event: MouseEvent): void {
     event.stopPropagation();
-    this.pinImage.emit(this.image().id);
+    this.featureImage.emit(this.image().id);
   }
 
   protected onDeleteClick(event: MouseEvent): void {
