@@ -1,5 +1,8 @@
 <article
   class="image-card relative h-full rounded border border-gray-300 bg-white p-3"
+  [class.featured]="isFeatured()"
+  [class.md:col-span-2]="isFeatured()"
+  [class.md:row-span-2]="isFeatured()"
   [class.pinned]="isPinned()"
   [class.selected]="isSelected()"
 >
@@ -18,8 +21,8 @@
     width="480"
     height="320"
     decoding="async"
-    [attr.loading]="isFeatured() ? 'eager' : 'lazy'"
-    [attr.fetchpriority]="isFeatured() ? 'high' : 'auto'"
+    [attr.loading]="isFeatured() || isPriority() ? 'eager' : 'lazy'"
+    [attr.fetchpriority]="isFeatured() || isPriority() ? 'high' : 'auto'"
     role="button"
     tabindex="0"
     [attr.aria-pressed]="isSelected()"

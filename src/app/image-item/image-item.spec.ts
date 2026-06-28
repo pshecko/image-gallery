@@ -12,8 +12,10 @@ import { ImageItem } from './image-item';
       [image]="image"
       [isFeatured]="isFeatured"
       [isSelected]="isSelected"
+      [isPinned]="isPinned"
       (selectImage)="selectedImageId = $event"
       (deleteImage)="deletedImageId = $event"
+      (pinImage)="pinnedImageId = $event"
     />
   `,
 })
@@ -21,8 +23,10 @@ class ImageItemHost {
   image = galleryImages[0];
   isFeatured = false;
   isSelected = false;
+  isPinned = false;
   selectedImageId = '';
   deletedImageId = '';
+  pinnedImageId = '';
 }
 
 describe('ImageItem', () => {
@@ -48,18 +52,22 @@ describe('ImageItem', () => {
     expect(compiled.textContent).toContain('Imagen 1');
   });
 
-  it('should apply a featured class when the image is featured', () => {
+  it('should not enlarge a pinned image card', () => {
     const fixture = TestBed.createComponent(ImageItemHost);
+    fixture.componentInstance.isPinned = true;
     fixture.componentInstance.isFeatured = true;
     fixture.detectChanges();
 
     const compiled = fixture.nativeElement as HTMLElement;
     const card = compiled.querySelector('.image-card');
 
-    expect(card?.classList.contains('featured')).toBe(true);
+    expect(card?.classList.contains('pinned')).toBe(true);
+    expect(card?.classList.contains('featured')).toBe(false);
+    expect(card?.classList.contains('md:col-span-2')).toBe(false);
+    expect(card?.classList.contains('md:row-span-2')).toBe(false);
   });
 
-  it('should make a featured image span two rows and columns from tablet size', () => {
+  it('should keep the normal card size when an image has priority loading', () => {
     const fixture = TestBed.createComponent(ImageItemHost);
     fixture.componentInstance.isFeatured = true;
     fixture.detectChanges();
@@ -67,8 +75,9 @@ describe('ImageItem', () => {
     const compiled = fixture.nativeElement as HTMLElement;
     const card = compiled.querySelector('.image-card');
 
-    expect(card?.classList.contains('md:col-span-2')).toBe(true);
-    expect(card?.classList.contains('md:row-span-2')).toBe(true);
+    expect(card?.classList.contains('featured')).toBe(false);
+    expect(card?.classList.contains('md:col-span-2')).toBe(false);
+    expect(card?.classList.contains('md:row-span-2')).toBe(false);
   });
 
   it('should show when an image is selected', () => {
@@ -99,6 +108,23 @@ describe('ImageItem', () => {
     expect(checkbox).not.toBeNull();
     expect(checkbox.checked).toBe(false);
     expect(compiled.querySelector('.selection-control')).toBeNull();
+  });
+
+  it('should show when an image is pinned', () => {
+    const fixture = TestBed.createComponent(ImageItemHost);
+    fixture.componentInstance.isPinned = true;
+    fixture.detectChanges();
+
+    const compiled = fixture.nativeElement as HTMLElement;
+    const pinButton = compiled.querySelector(
+      'button[aria-label="Unpin Imagen 1"]',
+    ) as HTMLButtonElement;
+    const title = compiled.querySelector('h2');
+
+    expect(pinButton).not.toBeNull();
+    expect(pinButton.getAttribute('aria-pressed')).toBe('true');
+    expect(title?.classList.contains('text-slate-100')).toBe(true);
+    expect(title?.classList.contains('text-gray-900')).toBe(false);
   });
 
   it('should emit the image id when the image is clicked', () => {
@@ -133,6 +159,23 @@ describe('ImageItem', () => {
     expect(fixture.componentInstance.selectedImageId).toBe(galleryImages[0].id);
   });
 
+  it('should emit the image id when the pin button is clicked', () => {
+    const fixture = TestBed.createComponent(ImageItemHost);
+    fixture.detectChanges();
+
+    const pinButton = fixture.debugElement.query(
+      By.css('button[aria-label="Pin Imagen 1"]'),
+    );
+    const clickEvent = {
+      stopPropagation: vi.fn(),
+    } as unknown as MouseEvent;
+
+    pinButton.triggerEventHandler('click', clickEvent);
+
+    expect(clickEvent.stopPropagation).toHaveBeenCalled();
+    expect(fixture.componentInstance.pinnedImageId).toBe(galleryImages[0].id);
+  });
+
   it('should emit the image id when selection is triggered from the keyboard', () => {
     const fixture = TestBed.createComponent(ImageItemHost);
     fixture.detectChanges();
@@ -154,7 +197,9 @@ describe('ImageItem', () => {
     const fixture = TestBed.createComponent(ImageItemHost);
     fixture.detectChanges();
 
-    const deleteButton = fixture.debugElement.query(By.css('button'));
+    const deleteButton = fixture.debugElement.query(
+      By.css('button[aria-label="Eliminar Imagen 1"]'),
+    );
     const clickEvent = {
       stopPropagation: vi.fn(),
     } as unknown as MouseEvent;
