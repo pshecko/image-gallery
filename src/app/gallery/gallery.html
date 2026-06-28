@@ -19,22 +19,46 @@
       <button
         pButton
         type="button"
-        label="Feature selected"
+        class="gallery-action-button"
         severity="secondary"
         size="small"
+        [title]="'Feature ' + selectedCountLabel()"
         [attr.aria-label]="'Feature ' + selectedCountLabel()"
         (click)="featureSelectedImages()"
-      ></button>
+      >
+        <svg
+          pButtonIcon
+          data-testid="batch-feature-icon"
+          class="gallery-action-icon"
+          viewBox="0 0 24 24"
+          aria-hidden="true"
+          focusable="false"
+        >
+          <use href="/icons/star.svg#star" />
+        </svg>
+      </button>
 
       <button
         pButton
         type="button"
-        label="Eliminar seleccionadas"
+        class="gallery-action-button"
         severity="danger"
         size="small"
+        [title]="'Eliminar ' + selectedCountLabel()"
         [attr.aria-label]="'Eliminar ' + selectedCountLabel()"
         (click)="deleteSelectedImages()"
-      ></button>
+      >
+        <svg
+          pButtonIcon
+          data-testid="batch-delete-icon"
+          class="gallery-action-icon"
+          viewBox="0 0 24 24"
+          aria-hidden="true"
+          focusable="false"
+        >
+          <use href="/icons/trash.svg#trash" />
+        </svg>
+      </button>
     </div>
   </div>
   }
