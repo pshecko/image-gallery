@@ -1,5 +1,5 @@
-import { TestBed } from '@angular/core/testing';
 import { CdkDragDrop } from '@angular/cdk/drag-drop';
+import { TestBed } from '@angular/core/testing';
 
 import { galleryImages } from '../data/gallery-images';
 import { GalleryImage } from '../models/gallery-image.model';
@@ -28,28 +28,28 @@ function changeCheckbox(compiled: HTMLElement, imageNumber: number): void {
   checkbox.dispatchEvent(new Event('change', { bubbles: true }));
 }
 
-function clickPinButton(compiled: HTMLElement, imageNumber: number): void {
-  const pinButton = compiled.querySelector(
-    `button[aria-label="Pin Imagen ${imageNumber}"]`,
+function clickFeatureButton(compiled: HTMLElement, imageNumber: number): void {
+  const featureButton = compiled.querySelector(
+    `button[aria-label="Feature Imagen ${imageNumber}"]`,
   ) as HTMLButtonElement;
 
-  pinButton.click();
+  featureButton.click();
 }
 
-function clickUnpinButton(compiled: HTMLElement, imageNumber: number): void {
-  const unpinButton = compiled.querySelector(
-    `button[aria-label="Unpin Imagen ${imageNumber}"]`,
+function clickUnfeatureButton(compiled: HTMLElement, imageNumber: number): void {
+  const unfeatureButton = compiled.querySelector(
+    `button[aria-label="Unfeature Imagen ${imageNumber}"]`,
   ) as HTMLButtonElement;
 
-  unpinButton.click();
+  unfeatureButton.click();
 }
 
-function clickPinButton(compiled: HTMLElement, imageNumber: number): void {
-  const pinButton = compiled.querySelector(
-    `button[aria-label="Pin Imagen ${imageNumber}"]`,
+function clickFeatureSelectedButton(compiled: HTMLElement): void {
+  const featureSelectedButton = compiled.querySelector(
+    'button[aria-label="Feature 2 imagenes seleccionadas"]',
   ) as HTMLButtonElement;
 
-  pinButton.click();
+  featureSelectedButton.click();
 }
 
 describe('Gallery', () => {
@@ -65,32 +65,38 @@ describe('Gallery', () => {
 
   it('should render one image item for each placeholder image', async () => {
     const fixture = TestBed.createComponent(Gallery);
+    fixture.detectChanges();
     await fixture.whenStable();
 
     const compiled = fixture.nativeElement as HTMLElement;
 
-    expect(compiled.querySelector('h1')?.textContent).toContain('Galeria de imagenes');
-    expect(compiled.querySelectorAll('app-image-item').length).toBe(galleryImages.length);
+    expect(compiled.querySelector('h1')?.textContent).toContain(
+      'Galeria de imagenes',
+    );
+    expect(compiled.querySelectorAll('app-image-item').length).toBe(
+      galleryImages.length,
+    );
   });
 
-  it('should mark an image as pinned after pinning it', async () => {
+  it('should mark an image as featured after featuring it', async () => {
     const fixture = TestBed.createComponent(Gallery);
     fixture.detectChanges();
     await fixture.whenStable();
 
     const compiled = fixture.nativeElement as HTMLElement;
 
-    clickPinButton(compiled, 1);
+    clickFeatureButton(compiled, 1);
     fixture.detectChanges();
 
     const cards = compiled.querySelectorAll('.image-card');
 
-    expect(cards[0]?.classList.contains('pinned')).toBe(true);
-    expect(cards[1]?.classList.contains('pinned')).toBe(false);
+    expect(cards[0]?.classList.contains('featured')).toBe(true);
+    expect(cards[1]?.classList.contains('featured')).toBe(false);
   });
 
   it('should use the responsive grid required by the briefing', async () => {
     const fixture = TestBed.createComponent(Gallery);
+    fixture.detectChanges();
     await fixture.whenStable();
 
     const compiled = fixture.nativeElement as HTMLElement;
@@ -101,7 +107,7 @@ describe('Gallery', () => {
     expect(grid?.classList.contains('lg:grid-cols-5')).toBe(true);
   });
 
-  it('should prioritize the first visible image for loading', async () => {
+  it('should load the first visible image eagerly', async () => {
     const fixture = TestBed.createComponent(Gallery);
     fixture.detectChanges();
     await fixture.whenStable();
@@ -147,6 +153,7 @@ describe('Gallery', () => {
     fixture.detectChanges();
 
     const compiled = fixture.nativeElement as HTMLElement;
+
     expect(getItemTitles(compiled).slice(0, 3)).toEqual([
       'Imagen 2',
       'Imagen 3',
@@ -154,7 +161,7 @@ describe('Gallery', () => {
     ]);
   });
 
-  it('should exclude pinned images from drag and drop reordering', async () => {
+  it('should exclude featured images from drag and drop reordering', async () => {
     const fixture = TestBed.createComponent(Gallery);
     fixture.detectChanges();
     await fixture.whenStable();
@@ -164,7 +171,7 @@ describe('Gallery', () => {
       drop(event: CdkDragDrop<GalleryImage[]>): void;
     };
 
-    clickPinButton(compiled, 1);
+    clickFeatureButton(compiled, 1);
     fixture.detectChanges();
 
     const imageItems = Array.from(compiled.querySelectorAll('app-image-item'));
@@ -182,24 +189,26 @@ describe('Gallery', () => {
     } as CdkDragDrop<GalleryImage[]>);
     fixture.detectChanges();
 
+    const cards = compiled.querySelectorAll('.image-card');
+
     expect(getItemTitles(compiled).slice(0, 4)).toEqual([
       'Imagen 1',
       'Imagen 3',
       'Imagen 4',
       'Imagen 2',
     ]);
-    expect(cards[0]?.classList.contains('pinned')).toBe(false);
-    expect(cards[2]?.classList.contains('pinned')).toBe(false);
+    expect(cards[0]?.classList.contains('featured')).toBe(true);
+    expect(cards[2]?.classList.contains('featured')).toBe(false);
   });
 
-  it('should move a pinned image above the other images', async () => {
+  it('should move a featured image above the other images', async () => {
     const fixture = TestBed.createComponent(Gallery);
     fixture.detectChanges();
     await fixture.whenStable();
 
     const compiled = fixture.nativeElement as HTMLElement;
 
-    clickPinButton(compiled, 3);
+    clickFeatureButton(compiled, 3);
     fixture.detectChanges();
 
     const cards = compiled.querySelectorAll('.image-card');
@@ -209,21 +218,21 @@ describe('Gallery', () => {
       'Imagen 1',
       'Imagen 2',
     ]);
-    expect(cards[0]?.classList.contains('pinned')).toBe(true);
-    expect(cards[1]?.classList.contains('pinned')).toBe(false);
+    expect(cards[0]?.classList.contains('featured')).toBe(true);
+    expect(cards[1]?.classList.contains('featured')).toBe(false);
   });
 
-  it('should keep multiple pinned images above unpinned images', async () => {
+  it('should keep multiple featured images above regular images', async () => {
     const fixture = TestBed.createComponent(Gallery);
     fixture.detectChanges();
     await fixture.whenStable();
 
     const compiled = fixture.nativeElement as HTMLElement;
 
-    clickPinButton(compiled, 3);
+    clickFeatureButton(compiled, 3);
     fixture.detectChanges();
 
-    clickPinButton(compiled, 5);
+    clickFeatureButton(compiled, 5);
     fixture.detectChanges();
 
     expect(getItemTitles(compiled)).toEqual([
@@ -235,25 +244,25 @@ describe('Gallery', () => {
       'Imagen 6',
     ]);
     expect(
-      compiled.querySelector('button[aria-label="Unpin Imagen 3"]'),
+      compiled.querySelector('button[aria-label="Unfeature Imagen 3"]'),
     ).not.toBeNull();
     expect(
-      compiled.querySelector('button[aria-label="Unpin Imagen 5"]'),
+      compiled.querySelector('button[aria-label="Unfeature Imagen 5"]'),
     ).not.toBeNull();
-    expect(compiled.querySelectorAll('.image-card.pinned').length).toBe(2);
+    expect(compiled.querySelectorAll('.image-card.featured').length).toBe(2);
   });
 
-  it('should move an unpinned image back with the other unpinned images', async () => {
+  it('should move an unfeatured image back with the other regular images', async () => {
     const fixture = TestBed.createComponent(Gallery);
     fixture.detectChanges();
     await fixture.whenStable();
 
     const compiled = fixture.nativeElement as HTMLElement;
 
-    clickPinButton(compiled, 3);
+    clickFeatureButton(compiled, 3);
     fixture.detectChanges();
 
-    clickUnpinButton(compiled, 3);
+    clickUnfeatureButton(compiled, 3);
     fixture.detectChanges();
 
     expect(getItemTitles(compiled).slice(0, 3)).toEqual([
@@ -262,9 +271,9 @@ describe('Gallery', () => {
       'Imagen 3',
     ]);
     expect(
-      compiled.querySelector('button[aria-label="Pin Imagen 3"]'),
+      compiled.querySelector('button[aria-label="Feature Imagen 3"]'),
     ).not.toBeNull();
-    expect(compiled.querySelectorAll('.image-card.pinned').length).toBe(0);
+    expect(compiled.querySelectorAll('.image-card.featured').length).toBe(0);
   });
 
   it('should select and deselect an image', async () => {
@@ -336,6 +345,38 @@ describe('Gallery', () => {
     ).toContain('2 imagenes seleccionadas');
   });
 
+  it('should feature selected checkbox images from the selection toolbar', async () => {
+    const fixture = TestBed.createComponent(Gallery);
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    const compiled = fixture.nativeElement as HTMLElement;
+
+    changeCheckbox(compiled, 3);
+    changeCheckbox(compiled, 5);
+    fixture.detectChanges();
+
+    clickFeatureSelectedButton(compiled);
+    fixture.detectChanges();
+
+    expect(getItemTitles(compiled)).toEqual([
+      'Imagen 3',
+      'Imagen 5',
+      'Imagen 1',
+      'Imagen 2',
+      'Imagen 4',
+      'Imagen 6',
+    ]);
+    expect(compiled.querySelectorAll('.image-card.featured').length).toBe(2);
+    expect(compiled.querySelectorAll('.image-card.selected').length).toBe(2);
+    expect(
+      compiled.querySelector('button[aria-label="Unfeature Imagen 3"]'),
+    ).not.toBeNull();
+    expect(
+      compiled.querySelector('button[aria-label="Unfeature Imagen 5"]'),
+    ).not.toBeNull();
+  });
+
   it('should delete selected images when batch deletion is confirmed', async () => {
     vi.spyOn(window, 'confirm').mockReturnValue(true);
     const fixture = TestBed.createComponent(Gallery);
@@ -395,7 +436,7 @@ describe('Gallery', () => {
     expect(compiled.textContent).toContain('Imagen 2');
   });
 
-  it('should clear selection for an image removed individually', async () => {
+  it('should clear selection and featured state for an image removed individually', async () => {
     vi.spyOn(window, 'confirm').mockReturnValue(true);
     const fixture = TestBed.createComponent(Gallery);
     fixture.detectChanges();
@@ -403,6 +444,7 @@ describe('Gallery', () => {
 
     const compiled = fixture.nativeElement as HTMLElement;
 
+    clickFeatureButton(compiled, 1);
     clickImage(compiled, 1);
     fixture.detectChanges();
 
@@ -417,6 +459,7 @@ describe('Gallery', () => {
       galleryImages.length - 1,
     );
     expect(compiled.querySelectorAll('.image-card.selected').length).toBe(0);
+    expect(compiled.querySelectorAll('.image-card.featured').length).toBe(0);
     expect(
       compiled.querySelector('[data-testid="selection-toolbar"]'),
     ).toBeNull();

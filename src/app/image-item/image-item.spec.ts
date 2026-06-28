@@ -10,23 +10,23 @@ import { ImageItem } from './image-item';
   template: `
     <app-image-item
       [image]="image"
-      [isFeatured]="isFeatured"
+      [loadsEagerly]="loadsEagerly"
       [isSelected]="isSelected"
-      [isPinned]="isPinned"
+      [isFeatured]="isFeatured"
       (selectImage)="selectedImageId = $event"
       (deleteImage)="deletedImageId = $event"
-      (pinImage)="pinnedImageId = $event"
+      (featureImage)="featuredImageId = $event"
     />
   `,
 })
 class ImageItemHost {
   image = galleryImages[0];
-  isFeatured = false;
+  loadsEagerly = false;
   isSelected = false;
-  isPinned = false;
+  isFeatured = false;
   selectedImageId = '';
   deletedImageId = '';
-  pinnedImageId = '';
+  featuredImageId = '';
 }
 
 describe('ImageItem', () => {
@@ -52,32 +52,29 @@ describe('ImageItem', () => {
     expect(compiled.textContent).toContain('Imagen 1');
   });
 
-  it('should not enlarge a pinned image card', () => {
+  it('should load eagerly without changing the featured state', () => {
     const fixture = TestBed.createComponent(ImageItemHost);
-    fixture.componentInstance.isPinned = true;
-    fixture.componentInstance.isFeatured = true;
+    fixture.componentInstance.loadsEagerly = true;
     fixture.detectChanges();
 
     const compiled = fixture.nativeElement as HTMLElement;
     const card = compiled.querySelector('.image-card');
+    const image = compiled.querySelector('img');
 
-    expect(card?.classList.contains('pinned')).toBe(true);
+    expect(image?.getAttribute('loading')).toBe('eager');
+    expect(image?.getAttribute('fetchpriority')).toBe('high');
     expect(card?.classList.contains('featured')).toBe(false);
-    expect(card?.classList.contains('md:col-span-2')).toBe(false);
-    expect(card?.classList.contains('md:row-span-2')).toBe(false);
   });
 
-  it('should keep the normal card size when an image has priority loading', () => {
+  it('should lazy load regular images', () => {
     const fixture = TestBed.createComponent(ImageItemHost);
-    fixture.componentInstance.isFeatured = true;
     fixture.detectChanges();
 
     const compiled = fixture.nativeElement as HTMLElement;
-    const card = compiled.querySelector('.image-card');
+    const image = compiled.querySelector('img');
 
-    expect(card?.classList.contains('featured')).toBe(false);
-    expect(card?.classList.contains('md:col-span-2')).toBe(false);
-    expect(card?.classList.contains('md:row-span-2')).toBe(false);
+    expect(image?.getAttribute('loading')).toBe('lazy');
+    expect(image?.getAttribute('fetchpriority')).toBe('auto');
   });
 
   it('should show when an image is selected', () => {
@@ -110,19 +107,21 @@ describe('ImageItem', () => {
     expect(compiled.querySelector('.selection-control')).toBeNull();
   });
 
-  it('should show when an image is pinned', () => {
+  it('should show when an image is featured', () => {
     const fixture = TestBed.createComponent(ImageItemHost);
-    fixture.componentInstance.isPinned = true;
+    fixture.componentInstance.isFeatured = true;
     fixture.detectChanges();
 
     const compiled = fixture.nativeElement as HTMLElement;
-    const pinButton = compiled.querySelector(
-      'button[aria-label="Unpin Imagen 1"]',
+    const card = compiled.querySelector('.image-card');
+    const featureButton = compiled.querySelector(
+      'button[aria-label="Unfeature Imagen 1"]',
     ) as HTMLButtonElement;
     const title = compiled.querySelector('h2');
 
-    expect(pinButton).not.toBeNull();
-    expect(pinButton.getAttribute('aria-pressed')).toBe('true');
+    expect(card?.classList.contains('featured')).toBe(true);
+    expect(featureButton).not.toBeNull();
+    expect(featureButton.getAttribute('aria-pressed')).toBe('true');
     expect(title?.classList.contains('text-slate-100')).toBe(true);
     expect(title?.classList.contains('text-gray-900')).toBe(false);
   });
@@ -159,21 +158,21 @@ describe('ImageItem', () => {
     expect(fixture.componentInstance.selectedImageId).toBe(galleryImages[0].id);
   });
 
-  it('should emit the image id when the pin button is clicked', () => {
+  it('should emit the image id when the feature button is clicked', () => {
     const fixture = TestBed.createComponent(ImageItemHost);
     fixture.detectChanges();
 
-    const pinButton = fixture.debugElement.query(
-      By.css('button[aria-label="Pin Imagen 1"]'),
+    const featureButton = fixture.debugElement.query(
+      By.css('button[aria-label="Feature Imagen 1"]'),
     );
     const clickEvent = {
       stopPropagation: vi.fn(),
     } as unknown as MouseEvent;
 
-    pinButton.triggerEventHandler('click', clickEvent);
+    featureButton.triggerEventHandler('click', clickEvent);
 
     expect(clickEvent.stopPropagation).toHaveBeenCalled();
-    expect(fixture.componentInstance.pinnedImageId).toBe(galleryImages[0].id);
+    expect(fixture.componentInstance.featuredImageId).toBe(galleryImages[0].id);
   });
 
   it('should emit the image id when selection is triggered from the keyboard', () => {
